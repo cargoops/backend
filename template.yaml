@@ -1,0 +1,103 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: "Example Warehouse Management System with 4 Lambdas"
+
+Globals:
+  Function:
+    Runtime: python3.9
+    Timeout: 15
+    MemorySize: 128
+    # SAM에서 모든 함수에 공통으로 적용할 환경변수
+    Environment:
+      Variables:
+        AWS_REGION: "ap-northeast-2"
+        STORING_ORDERS_TABLE: "StoringOrders"
+        PACKAGES_TABLE: "Packages"
+        PICKSLIPS_TABLE: "PickSlips"
+    # 필수 IAM 정책 예시 (실무에서는 최소 권한 원칙에 따라 적절히 수정)
+    Policies:
+      - AWSLambdaBasicExecutionRole
+      - AmazonDynamoDBFullAccess  # 예시로 전체 권한, 실제로는 최소권한으로 설정 권장
+
+Resources:
+  ########################
+  # API Gateway
+  ########################
+  WmsApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: "WmsApi"
+      StageName: "Prod"
+
+  ########################
+  # 1) StoringOrderValidityCheck 함수
+  ########################
+  StoringOrderValidityCheckFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: "storingOrderValidityCheck"
+      CodeUri: src/storingOrderValidityCheck/
+      Handler: handler.lambda_handler
+      Events:
+        CheckStoringOrderApi:
+          Type: Api
+          Properties:
+            RestApiId: !Ref WmsApi
+            Path: /storing-order/check
+            Method: POST
+
+  ########################
+  # 2) PackageQuery 함수
+  ########################
+  PackageQueryFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: "packageQuery"
+      CodeUri: src/packageQuery/
+      Handler: handler.lambda_handler
+      Events:
+        GetPackageApi:
+          Type: Api
+          Properties:
+            RestApiId: !Ref WmsApi
+            Path: /package
+            Method: GET
+
+  ########################
+  # 3) PickSlipsScan 함수
+  ########################
+  PickSlipsScanFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: "pickSlipsScan"
+      CodeUri: src/pickSlipsScan/
+      Handler: handler.lambda_handler
+      Events:
+        GetPickSlipsApi:
+          Type: Api
+          Properties:
+            RestApiId: !Ref WmsApi
+            Path: /pickslips
+            Method: GET
+
+  ########################
+  # 4) StoringOrdersScan 함수
+  ########################
+  StoringOrdersScanFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: "storingOrdersScan"
+      CodeUri: src/storingOrdersScan/
+      Handler: handler.lambda_handler
+      Events:
+        GetStoringOrdersApi:
+          Type: Api
+          Properties:
+            RestApiId: !Ref WmsApi
+            Path: /storing-orders
+            Method: GET
+
+Outputs:
+  ApiUrl:
+    Description: "API Gateway endpoint URL"
+    Value: !Sub "https://${WmsApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/"
