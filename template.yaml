@@ -9,7 +9,7 @@ Globals:
     MemorySize: 128
     Environment:
       Variables:
-        AWS_REGION: "us-east-2"
+        MY_REGION: "us-east-2"
         STORING_ORDERS_TABLE: "StoringOrders"
         PACKAGES_TABLE: "Packages"
         PICKSLIPS_TABLE: "PickSlips"
