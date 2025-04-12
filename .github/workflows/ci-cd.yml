@@ -48,3 +48,4 @@ jobs:
             --stack-name WmsStack \
             --capabilities CAPABILITY_IAM \
             --region us-east-2
+            --resolve-s3 \
