@@ -5,7 +5,7 @@
 # }
 
 import json
-from src.common import db, config, utils
+from ..common import db, config, utils
 
 def lambda_handler(event, context):
     try:
