@@ -21,8 +21,11 @@ Resources:
   WmsApi:
     Type: AWS::Serverless::Api
     Properties:
-      Name: "WmsApi"
-      StageName: "Prod"
+      StageName: Prod
+      Cors:
+        AllowMethods: "'GET,POST,OPTIONS'"
+        AllowHeaders: "'Content-Type,Authorization'"
+        AllowOrigin: "'*'"
 
   ########################
   # 1) StoringOrderValidityCheck 함수

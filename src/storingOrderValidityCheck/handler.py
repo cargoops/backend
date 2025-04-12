@@ -31,10 +31,6 @@ def lambda_handler(event, context):
         if not storing_order_id or not input_awb or not input_boe:
             return {
                 'statusCode': 400,
-                'headers': {
-                    'Content-Type': 'application/json',
-                    'Access-Control-Allow-Origin': '*'
-                },
                 'body': json.dumps({
                     'message': 'Missing required fields'
                 })
@@ -47,10 +43,6 @@ def lambda_handler(event, context):
         if not item:
             return {
                 'statusCode': 404,
-                'headers': {
-                    'Content-Type': 'application/json',
-                    'Access-Control-Allow-Origin': '*'
-                },
                 'body': json.dumps({
                     'message': 'StoringOrder not found'
                 })
@@ -70,10 +62,6 @@ def lambda_handler(event, context):
             )
             return {
                 'statusCode': 200,
-                'headers': {
-                    'Content-Type': 'application/json',
-                    'Access-Control-Allow-Origin': '*'
-                },
                 'body': json.dumps({
                     'message': 'StoringOrder status updated to TQ'
                 })
@@ -81,10 +69,6 @@ def lambda_handler(event, context):
         else:
             return {
                 'statusCode': 400,
-                'headers': {
-                    'Content-Type': 'application/json',
-                    'Access-Control-Allow-Origin': '*'
-                },
                 'body': json.dumps({
                     'message': 'airwayBillNumber or billOfEntryId mismatch'
                 })
@@ -94,10 +78,6 @@ def lambda_handler(event, context):
         print(f"Error: {e}")
         return {
             'statusCode': 500,
-            'headers': {
-                'Content-Type': 'application/json',
-                'Access-Control-Allow-Origin': '*'
-            },
             'body': json.dumps({
                 'message': 'Internal Server Error'
             })

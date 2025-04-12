@@ -23,10 +23,6 @@ def lambda_handler(event, context):
         if not package_id:
             return {
                 'statusCode': 400,
-                'headers': {
-                    'Content-Type': 'application/json',
-                    'Access-Control-Allow-Origin': '*'
-                },
                 'body': json.dumps({
                     'message': 'Missing packageId'
                 })
@@ -38,10 +34,6 @@ def lambda_handler(event, context):
         if not item:
             return {
                 'statusCode': 404,
-                'headers': {
-                    'Content-Type': 'application/json',
-                    'Access-Control-Allow-Origin': '*'
-                },
                 'body': json.dumps({
                     'message': 'Package not found'
                 })
@@ -50,10 +42,6 @@ def lambda_handler(event, context):
         item = convert_decimal_to_float(item)
         return {
             'statusCode': 200,
-            'headers': {
-                'Content-Type': 'application/json',
-                'Access-Control-Allow-Origin': '*'
-            },
             'body': json.dumps({
                 'data': item
             })
@@ -63,10 +51,6 @@ def lambda_handler(event, context):
         print(f"Error: {e}")
         return {
             'statusCode': 500,
-            'headers': {
-                'Content-Type': 'application/json',
-                'Access-Control-Allow-Origin': '*'
-            },
             'body': json.dumps({
                 'message': 'Internal Server Error'
             })
