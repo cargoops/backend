@@ -7,17 +7,12 @@ Globals:
     Runtime: python3.9
     Timeout: 15
     MemorySize: 128
-    # SAM에서 모든 함수에 공통으로 적용할 환경변수
     Environment:
       Variables:
-        AWS_REGION: "ap-northeast-2"
+        AWS_REGION: "us-east-2"
         STORING_ORDERS_TABLE: "StoringOrders"
         PACKAGES_TABLE: "Packages"
         PICKSLIPS_TABLE: "PickSlips"
-    # 필수 IAM 정책 예시 (실무에서는 최소 권한 원칙에 따라 적절히 수정)
-    Policies:
-      - AWSLambdaBasicExecutionRole
-      - AmazonDynamoDBFullAccess  # 예시로 전체 권한, 실제로는 최소권한으로 설정 권장
 
 Resources:
   ########################
@@ -38,6 +33,12 @@ Resources:
       FunctionName: "storingOrderValidityCheck"
       CodeUri: src/storingOrderValidityCheck/
       Handler: handler.lambda_handler
+
+      # 여기서 Policies를 지정 (또는 Role: <IAM Role ARN> 을 사용)
+      Policies:
+        - AWSLambdaBasicExecutionRole
+        - AmazonDynamoDBFullAccess
+
       Events:
         CheckStoringOrderApi:
           Type: Api
@@ -55,6 +56,11 @@ Resources:
       FunctionName: "packageQuery"
       CodeUri: src/packageQuery/
       Handler: handler.lambda_handler
+
+      Policies:
+        - AWSLambdaBasicExecutionRole
+        - AmazonDynamoDBFullAccess
+
       Events:
         GetPackageApi:
           Type: Api
@@ -72,6 +78,11 @@ Resources:
       FunctionName: "pickSlipsScan"
       CodeUri: src/pickSlipsScan/
       Handler: handler.lambda_handler
+
+      Policies:
+        - AWSLambdaBasicExecutionRole
+        - AmazonDynamoDBFullAccess
+
       Events:
         GetPickSlipsApi:
           Type: Api
@@ -89,6 +100,11 @@ Resources:
       FunctionName: "storingOrdersScan"
       CodeUri: src/storingOrdersScan/
       Handler: handler.lambda_handler
+
+      Policies:
+        - AWSLambdaBasicExecutionRole
+        - AmazonDynamoDBFullAccess
+
       Events:
         GetStoringOrdersApi:
           Type: Api
