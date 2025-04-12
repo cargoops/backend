@@ -1,30 +1,45 @@
 import json
 import os
 import boto3
-from boto3.dynamodb.conditions import Key
+from decimal import Decimal
 
 dynamodb = boto3.resource('dynamodb')
 table = dynamodb.Table(os.environ['PACKAGES_TABLE'])
 
+def convert_decimal_to_float(obj):
+    if isinstance(obj, Decimal):
+        return float(obj)
+    elif isinstance(obj, dict):
+        return {k: convert_decimal_to_float(v) for k, v in obj.items()}
+    elif isinstance(obj, list):
+        return [convert_decimal_to_float(i) for i in obj]
+    return obj
+
 def lambda_handler(event, context):
     try:
-        # DynamoDB에서 모든 패키지를 스캔
         response = table.scan()
+        items = convert_decimal_to_float(response.get('Items', []))
         
-        # 응답 형식 설정
         return {
             'statusCode': 200,
+            'headers': {
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': '*'
+            },
             'body': json.dumps({
-                'message': 'Successfully retrieved packages',
-                'packages': response.get('Items', [])
+                'data': items
             })
         }
         
     except Exception as e:
+        print(f"Error: {e}")
         return {
             'statusCode': 500,
+            'headers': {
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': '*'
+            },
             'body': json.dumps({
-                'message': 'Error retrieving packages',
-                'error': str(e)
+                'message': 'Internal Server Error'
             })
         } 

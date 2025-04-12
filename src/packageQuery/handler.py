@@ -1,26 +1,73 @@
-from ..common import db, config, utils
-import urllib.parse
+import json
+import os
+import boto3
+from decimal import Decimal
+
+dynamodb = boto3.resource('dynamodb')
+table = dynamodb.Table(os.environ['PACKAGES_TABLE'])
+
+def convert_decimal_to_float(obj):
+    if isinstance(obj, Decimal):
+        return float(obj)
+    elif isinstance(obj, dict):
+        return {k: convert_decimal_to_float(v) for k, v in obj.items()}
+    elif isinstance(obj, list):
+        return [convert_decimal_to_float(i) for i in obj]
+    return obj
 
 def lambda_handler(event, context):
     try:
-        # queryStringParameters에서 packageId를 가져온다고 가정
         params = event.get("queryStringParameters") or {}
         package_id = params.get("packageId")
 
         if not package_id:
-            return utils.make_response(400, {"message": "Missing packageId"})
+            return {
+                'statusCode': 400,
+                'headers': {
+                    'Content-Type': 'application/json',
+                    'Access-Control-Allow-Origin': '*'
+                },
+                'body': json.dumps({
+                    'message': 'Missing packageId'
+                })
+            }
 
-        # DynamoDB에서 get
-        item = db.get_item(
-            table_name=config.PACKAGES_TABLE,
-            key={"packageId": package_id}
-        )
+        response = table.get_item(Key={'packageId': package_id})
+        item = response.get('Item')
 
         if not item:
-            return utils.make_response(404, {"message": "Package not found"})
+            return {
+                'statusCode': 404,
+                'headers': {
+                    'Content-Type': 'application/json',
+                    'Access-Control-Allow-Origin': '*'
+                },
+                'body': json.dumps({
+                    'message': 'Package not found'
+                })
+            }
 
-        return utils.make_response(200, {"data": item})
+        item = convert_decimal_to_float(item)
+        return {
+            'statusCode': 200,
+            'headers': {
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': '*'
+            },
+            'body': json.dumps({
+                'data': item
+            })
+        }
 
     except Exception as e:
         print(f"Error: {e}")
-        return utils.make_response(500, {"message": "Internal Server Error"})
+        return {
+            'statusCode': 500,
+            'headers': {
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': '*'
+            },
+            'body': json.dumps({
+                'message': 'Internal Server Error'
+            })
+        }
