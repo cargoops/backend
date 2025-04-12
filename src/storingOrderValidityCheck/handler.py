@@ -5,7 +5,21 @@
 # }
 
 import json
-from ..common import db, config, utils
+import os
+import boto3
+from decimal import Decimal
+
+dynamodb = boto3.resource('dynamodb')
+table = dynamodb.Table(os.environ['STORING_ORDERS_TABLE'])
+
+def convert_decimal_to_float(obj):
+    if isinstance(obj, Decimal):
+        return float(obj)
+    elif isinstance(obj, dict):
+        return {k: convert_decimal_to_float(v) for k, v in obj.items()}
+    elif isinstance(obj, list):
+        return [convert_decimal_to_float(i) for i in obj]
+    return obj
 
 def lambda_handler(event, context):
     try:
@@ -15,16 +29,32 @@ def lambda_handler(event, context):
         input_boe = body.get("billOfEntryId")
 
         if not storing_order_id or not input_awb or not input_boe:
-            return utils.make_response(400, {"message": "Missing required fields"})
+            return {
+                'statusCode': 400,
+                'headers': {
+                    'Content-Type': 'application/json',
+                    'Access-Control-Allow-Origin': '*'
+                },
+                'body': json.dumps({
+                    'message': 'Missing required fields'
+                })
+            }
 
         # 1. 테이블에서 Get
-        item = db.get_item(
-            table_name=config.STORING_ORDERS_TABLE,
-            key={"storingOrderId": storing_order_id}
-        )
+        response = table.get_item(Key={'storingOrderId': storing_order_id})
+        item = response.get('Item')
 
         if not item:
-            return utils.make_response(404, {"message": "StoringOrder not found"})
+            return {
+                'statusCode': 404,
+                'headers': {
+                    'Content-Type': 'application/json',
+                    'Access-Control-Allow-Origin': '*'
+                },
+                'body': json.dumps({
+                    'message': 'StoringOrder not found'
+                })
+            }
         
         # 2. 데이터 비교
         db_awb = item.get("airwayBillNumber")
@@ -32,17 +62,43 @@ def lambda_handler(event, context):
 
         if db_awb == input_awb and db_boe == input_boe:
             # 3. 상태 업데이트 (status -> 'TQ')
-            db.update_item(
-                table_name=config.STORING_ORDERS_TABLE,
-                key={"storingOrderId": storing_order_id},
-                update_expression="SET #st = :tqStatus",
-                expression_values={":tqStatus": "TQ"},
-                expression_names={"#st": "status"}
+            table.update_item(
+                Key={'storingOrderId': storing_order_id},
+                UpdateExpression="SET #st = :tqStatus",
+                ExpressionValues={":tqStatus": "TQ"},
+                ExpressionAttributeNames={"#st": "status"}
             )
-            return utils.make_response(200, {"message": "StoringOrder status updated to TQ"})
+            return {
+                'statusCode': 200,
+                'headers': {
+                    'Content-Type': 'application/json',
+                    'Access-Control-Allow-Origin': '*'
+                },
+                'body': json.dumps({
+                    'message': 'StoringOrder status updated to TQ'
+                })
+            }
         else:
-            return utils.make_response(400, {"message": "airwayBillNumber or billOfEntryId mismatch"})
+            return {
+                'statusCode': 400,
+                'headers': {
+                    'Content-Type': 'application/json',
+                    'Access-Control-Allow-Origin': '*'
+                },
+                'body': json.dumps({
+                    'message': 'airwayBillNumber or billOfEntryId mismatch'
+                })
+            }
 
     except Exception as e:
         print(f"Error: {e}")
-        return utils.make_response(500, {"message": "Internal Server Error"})
+        return {
+            'statusCode': 500,
+            'headers': {
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': '*'
+            },
+            'body': json.dumps({
+                'message': 'Internal Server Error'
+            })
+        }
