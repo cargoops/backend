@@ -113,6 +113,28 @@ Resources:
             Path: /storing-orders
             Method: GET
 
+  ########################
+  # 5) PackagesScan 함수
+  ########################
+  PackagesScanFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: "packagesScan"
+      CodeUri: src/packagesScan/
+      Handler: handler.lambda_handler
+
+      Policies:
+        - AWSLambdaBasicExecutionRole
+        - AmazonDynamoDBFullAccess
+
+      Events:
+        GetPackagesApi:
+          Type: Api
+          Properties:
+            RestApiId: !Ref WmsApi
+            Path: /packages
+            Method: GET
+
 Outputs:
   ApiUrl:
     Description: "API Gateway endpoint URL"
