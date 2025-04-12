@@ -65,7 +65,7 @@ def lambda_handler(event, context):
             table.update_item(
                 Key={'storingOrderId': storing_order_id},
                 UpdateExpression="SET #st = :tqStatus",
-                ExpressionValues={":tqStatus": "TQ"},
+                ExpressionAttributeValues={":tqStatus": "TQ"},
                 ExpressionAttributeNames={"#st": "status"}
             )
             return {
