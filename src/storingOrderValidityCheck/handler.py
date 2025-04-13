@@ -21,6 +21,20 @@ logger.setLevel(logging.INFO)
 
 table = dynamodb.Table(os.environ['STORING_ORDERS_TABLE'])
 
+# AWS IoT 클라이언트 설정 (응답용)
+iot_client = boto3.client('iot-data', region_name='us-east-2')
+
+def publish_response_to_iot(payload):
+    try:
+        iot_client.publish(
+            topic='scanner/response',
+            qos=0,
+            payload=json.dumps(payload)
+        )
+    except Exception as e:
+        logger.error(f"🚨 응답 publish 실패: {e}")
+
+
 def convert_decimal_to_float(obj):
     if isinstance(obj, Decimal):
         return float(obj)
@@ -84,6 +98,16 @@ def lambda_handler(event, context):
                 ExpressionAttributeValues={":tqStatus": "TQ"},
                 ExpressionAttributeNames={"#st": "status"}
             )
+
+            # 👉 MQTT 요청인 경우에만 응답 발행
+            if not ('body' in event and isinstance(event['body'], str)):
+                publish_response_to_iot({
+                    'message': 'StoringOrder status updated to TQ',
+                    'storingOrderId': storing_order_id
+            })
+
+
+
             return {
                 'statusCode': 200,
                 'headers': {
