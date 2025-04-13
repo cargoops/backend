@@ -32,7 +32,10 @@ def convert_decimal_to_float(obj):
 
 def lambda_handler(event, context):
     try:
-        body = json.loads(event.get("body", "{}"))
+        if isinstance(event, dict) and 'body' in event:
+            body = json.loads(event['body'])  # API Gateway 호출 시
+        else:
+            body = event  # AWS IoT 메시지 또는 기타 직접 전달
         storing_order_id = body.get("storingOrderId")
         input_awb = body.get("airwayBillNumber")
         input_boe = body.get("billOfEntryId")
