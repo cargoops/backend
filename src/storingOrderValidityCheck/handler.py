@@ -120,6 +120,18 @@ def lambda_handler(event, context):
             }
         else:
             logger.warning("❌ 값 불일치 - 상태 변경되지 않음")  # 🟡 값 불일치 로그
+            
+            # ❗ mismatch 응답을 로컬에 publish
+            iot_client = boto3.client('iot-data', region_name='us-east-2')
+            iot_client.publish(
+                topic='scanner/response',
+                qos=0,
+                payload=json.dumps({
+                'message': 'airwayBillNumber or billOfEntryId mismatch',
+                'storingOrderId': storing_order_id
+                })
+            )
+            
             return {
                 'statusCode': 400,
                 'headers': {
