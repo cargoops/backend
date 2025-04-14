@@ -102,7 +102,7 @@ def lambda_handler(event, context):
             # 👉 MQTT 요청인 경우에만 응답 발행
             if not ('body' in event and isinstance(event['body'], str)):
                 publish_response_to_iot({
-                    'message': 'StoringOrder status updated to TQ',
+                    'message': '✅StoringOrder status updated to TQ',
                     'storingOrderId': storing_order_id
             })
 
@@ -123,7 +123,7 @@ def lambda_handler(event, context):
             
             # ❗ 여기 추가
             publish_response_to_iot({
-                'message': 'airwayBillNumber or billOfEntryId mismatch',
+                'message': '❌airwayBillNumber or billOfEntryId mismatch',
                 'storingOrderId': storing_order_id
             })
             
