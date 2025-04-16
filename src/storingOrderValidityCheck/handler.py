@@ -140,7 +140,7 @@ def lambda_handler(event, context):
 
     except Exception as e:
         print(f"Error: {e}")
-        logger.error(f"🚨 예외 발생: {e}")  # 🔴 예외 발생 로그
+        logger.error(f"🚨 예외 발생!: {e}")  # 🔴 예외 발생 로그
         return {
             'statusCode': 500,
             'headers': {
