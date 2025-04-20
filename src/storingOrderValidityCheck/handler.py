@@ -10,7 +10,8 @@ import boto3
 from decimal import Decimal
 
 dynamodb = boto3.resource('dynamodb')
-table = dynamodb.Table(os.environ['STORING_ORDERS_TABLE'])
+storing_orders_table = dynamodb.Table(os.environ['STORING_ORDERS_TABLE'])
+packages_table = dynamodb.Table(os.environ['PACKAGES_TABLE'])
 
 def convert_decimal_to_float(obj):
     if isinstance(obj, Decimal):
@@ -41,7 +42,7 @@ def lambda_handler(event, context):
             }
 
         # 1. 테이블에서 Get
-        response = table.get_item(Key={'storingOrderId': storing_order_id})
+        response = storing_orders_table.get_item(Key={'storingOrderId': storing_order_id})
         item = response.get('Item')
 
         if not item:
@@ -62,12 +63,27 @@ def lambda_handler(event, context):
 
         if db_awb == input_awb and db_boe == input_boe:
             # 3. 상태 업데이트 (status -> 'TQ')
-            table.update_item(
+            storing_orders_table.update_item(
                 Key={'storingOrderId': storing_order_id},
                 UpdateExpression="SET #st = :tqStatus",
                 ExpressionAttributeValues={":tqStatus": "TQ"},
                 ExpressionAttributeNames={"#st": "status"}
             )
+
+            # 4. 연결된 모든 패키지들의 상태도 TQ로 업데이트
+            packages = item.get('packages', [])
+            for package_id in packages:
+                try:
+                    packages_table.update_item(
+                        Key={'packageId': package_id},
+                        UpdateExpression="SET #st = :tqStatus",
+                        ExpressionAttributeValues={":tqStatus": "TQ"},
+                        ExpressionAttributeNames={"#st": "status"}
+                    )
+                except Exception as e:
+                    print(f"Error updating package {package_id}: {e}")
+                    # 개별 패키지 업데이트 실패는 전체 작업을 중단하지 않음
+
             return {
                 'statusCode': 200,
                 'headers': {
@@ -75,7 +91,7 @@ def lambda_handler(event, context):
                     'Access-Control-Allow-Origin': '*'
                 },
                 'body': json.dumps({
-                    'message': 'StoringOrder status updated to TQ'
+                    'message': 'StoringOrder and related packages status updated to TQ'
                 })
             }
         else:
