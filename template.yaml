@@ -138,6 +138,30 @@ Resources:
             Path: /packages
             Method: GET
 
+
+  ########################
+  # 6) GlueCrawlerRegister 함수 (API 없이 내부용)
+  ########################
+  GlueCrawlerRegisterFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: "glueCrawlerRegister"
+      CodeUri: src/glueCrawlerRegister/
+      Handler: handler.handler  # 보통 Lambda 내부는 handler(event, context)
+
+      Policies:
+        - AWSLambdaBasicExecutionRole
+        - Statement:
+            - Effect: Allow
+              Action:
+                - glue:*
+                - dynamodb:ListTables
+                - iam:PassRole
+              Resource: "*"
+
+      # 이벤트가 없는 내부 트리거용 Lambda
+      # 이후 EventBridge 트리거나 Step Functions로 연결 가능
+
 Outputs:
   ApiUrl:
     Description: "API Gateway endpoint URL"
