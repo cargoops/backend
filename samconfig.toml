@@ -1,0 +1,9 @@
+version = 0.1
+
+[default.deploy]
+s3_bucket = "my-sam-artifacts-bucket"
+region = "us-east-2"
+capabilities = "CAPABILITY_IAM"
+stack_name = "WmsStack"
+confirm_changeset = false
+resolve_s3 = true
