@@ -49,5 +49,5 @@ jobs:
             --stack-name WmsStack \
             --region us-east-2 \
             --capabilities CAPABILITY_IAM \
-            --resolve-s3 \
+            --s3-bucket my-sam-artifacts-bucket-hyu-202504 \
             --no-confirm-changeset
