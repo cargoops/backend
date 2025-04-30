@@ -93,6 +93,28 @@ Resources:
             Method: POST
 
   ########################
+  # Initial Admin Key Function
+  ########################
+  InitAdminKeyFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: "initAdminKey"
+      CodeUri: src/
+      Handler: common.handlers.init_admin_key.lambda_handler
+      Layers:
+        - !Ref DependenciesLayer
+      Policies:
+        - AWSLambdaBasicExecutionRole
+        - AmazonDynamoDBFullAccess
+      Events:
+        CreateInitialAdminKeyApi:
+          Type: Api
+          Properties:
+            RestApiId: !Ref WmsApi
+            Path: /init-admin-key
+            Method: POST
+
+  ########################
   # 1) StoringOrderValidityCheck 함수
   ########################
   StoringOrderValidityCheckFunction:
