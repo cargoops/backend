@@ -1,5 +1,5 @@
 from typing import List, Optional
-from ..models.api_key import APIKey
+from src.common.models.api_key import APIKey
 import boto3
 from boto3.dynamodb.conditions import Key
 from datetime import datetime

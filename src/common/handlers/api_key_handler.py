@@ -1,8 +1,8 @@
 import json
 from datetime import datetime
-from ..models.api_key import APIKey
-from ..repositories.api_key_repository import APIKeyRepository
-from ..middleware.api_key_middleware import require_api_key
+from src.common.models.api_key import APIKey
+from src.common.repositories.api_key_repository import APIKeyRepository
+from src.common.middleware.api_key_middleware import require_api_key
 
 @require_api_key('admin:api_keys')
 def create_api_key(event, context):
@@ -34,8 +34,9 @@ def create_api_key(event, context):
             })
         }
     except Exception as e:
+        print(f"Error: {str(e)}")
         return {
-            'statusCode': 400,
+            'statusCode': 500,
             'body': json.dumps({
                 'error': str(e)
             })

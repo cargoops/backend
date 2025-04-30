@@ -64,8 +64,8 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: "apiKeyManagement"
-      CodeUri: src/common/
-      Handler: handlers.api_key_handler.create_api_key
+      CodeUri: src/
+      Handler: common.handlers.api_key_handler.create_api_key
       Policies:
         - AWSLambdaBasicExecutionRole
         - AmazonDynamoDBFullAccess
