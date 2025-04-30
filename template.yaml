@@ -71,28 +71,6 @@ Resources:
         WriteCapacityUnits: 5
 
   ########################
-  # API Key Management Function
-  ########################
-  ApiKeyManagementFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      FunctionName: "apiKeyManagement"
-      CodeUri: src/
-      Handler: common.handlers.api_key_handler.create_api_key
-      Layers:
-        - !Ref DependenciesLayer
-      Policies:
-        - AWSLambdaBasicExecutionRole
-        - AmazonDynamoDBFullAccess
-      Events:
-        CreateApiKeyApi:
-          Type: Api
-          Properties:
-            RestApiId: !Ref WmsApi
-            Path: /api-keys
-            Method: POST
-
-  ########################
   # Initial Admin Key Function
   ########################
   InitAdminKeyFunction:
@@ -115,20 +93,41 @@ Resources:
             Method: POST
 
   ########################
+  # API Key Management Function
+  ########################
+  ApiKeyManagementFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: "apiKeyManagement"
+      CodeUri: src/
+      Handler: common.handlers.api_key_handler.create_api_key
+      Layers:
+        - !Ref DependenciesLayer
+      Policies:
+        - AWSLambdaBasicExecutionRole
+        - AmazonDynamoDBFullAccess
+      Events:
+        CreateApiKeyApi:
+          Type: Api
+          Properties:
+            RestApiId: !Ref WmsApi
+            Path: /api-keys
+            Method: POST
+
+  ########################
   # 1) StoringOrderValidityCheck 함수
   ########################
   StoringOrderValidityCheckFunction:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: "storingOrderValidityCheck"
-      CodeUri: src/storingOrderValidityCheck/
-      Handler: handler.lambda_handler
-
-      # 여기서 Policies를 지정 (또는 Role: <IAM Role ARN> 을 사용)
+      CodeUri: src/
+      Handler: storingOrderValidityCheck.handler.lambda_handler
+      Layers:
+        - !Ref DependenciesLayer
       Policies:
         - AWSLambdaBasicExecutionRole
         - AmazonDynamoDBFullAccess
-
       Events:
         CheckStoringOrderApi:
           Type: Api
@@ -144,13 +143,13 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: "packageQuery"
-      CodeUri: src/packageQuery/
-      Handler: handler.lambda_handler
-
+      CodeUri: src/
+      Handler: packageQuery.handler.lambda_handler
+      Layers:
+        - !Ref DependenciesLayer
       Policies:
         - AWSLambdaBasicExecutionRole
         - AmazonDynamoDBFullAccess
-
       Events:
         GetPackageApi:
           Type: Api
@@ -166,13 +165,13 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: "pickSlipsScan"
-      CodeUri: src/pickSlipsScan/
-      Handler: handler.lambda_handler
-
+      CodeUri: src/
+      Handler: pickSlipsScan.handler.lambda_handler
+      Layers:
+        - !Ref DependenciesLayer
       Policies:
         - AWSLambdaBasicExecutionRole
         - AmazonDynamoDBFullAccess
-
       Events:
         GetPickSlipsApi:
           Type: Api
@@ -188,13 +187,13 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: "storingOrdersScan"
-      CodeUri: src/storingOrdersScan/
-      Handler: handler.lambda_handler
-
+      CodeUri: src/
+      Handler: storingOrdersScan.handler.lambda_handler
+      Layers:
+        - !Ref DependenciesLayer
       Policies:
         - AWSLambdaBasicExecutionRole
         - AmazonDynamoDBFullAccess
-
       Events:
         GetStoringOrdersApi:
           Type: Api
@@ -210,13 +209,13 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: "packagesScan"
-      CodeUri: src/packagesScan/
-      Handler: handler.lambda_handler
-
+      CodeUri: src/
+      Handler: packagesScan.handler.lambda_handler
+      Layers:
+        - !Ref DependenciesLayer
       Policies:
         - AWSLambdaBasicExecutionRole
         - AmazonDynamoDBFullAccess
-
       Events:
         GetPackagesApi:
           Type: Api
