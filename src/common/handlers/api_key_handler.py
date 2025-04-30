@@ -1,8 +1,8 @@
 import json
 from datetime import datetime
-from src.common.models.api_key import APIKey
-from src.common.repositories.api_key_repository import APIKeyRepository
-from src.common.middleware.api_key_middleware import require_api_key
+from common.models.api_key import APIKey
+from common.repositories.api_key_repository import APIKeyRepository
+from common.middleware.api_key_middleware import require_api_key
 
 @require_api_key('admin:api_keys')
 def create_api_key(event, context):

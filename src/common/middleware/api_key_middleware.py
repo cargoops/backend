@@ -1,7 +1,7 @@
 from functools import wraps
 from typing import Callable
 import json
-from src.common.repositories.api_key_repository import APIKeyRepository
+from common.repositories.api_key_repository import APIKeyRepository
 
 def require_api_key(required_permission: str):
     def decorator(handler: Callable):
