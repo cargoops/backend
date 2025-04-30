@@ -13,7 +13,7 @@ def require_api_key(required_permission: str):
                 return {
                     'statusCode': 401,
                     'body': json.dumps({
-                        'error': 'API 키가 필요합니다.'
+                        'error': 'API key is required'
                     })
                 }
 
@@ -23,7 +23,7 @@ def require_api_key(required_permission: str):
                 return {
                     'statusCode': 403,
                     'body': json.dumps({
-                        'error': '유효하지 않은 API 키이거나 권한이 부족합니다.'
+                        'error': 'Invalid API key or insufficient permissions'
                     })
                 }
 

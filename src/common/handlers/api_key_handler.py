@@ -23,7 +23,7 @@ def create_api_key(event, context):
         return {
             'statusCode': 201,
             'body': json.dumps({
-                'message': 'API 키가 생성되었습니다.',
+                'message': 'API key created successfully',
                 'api_key': {
                     'id': created_key.id,
                     'key': created_key.key,

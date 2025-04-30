@@ -31,7 +31,7 @@ def lambda_handler(event, context):
         return {
             'statusCode': 201,
             'body': json.dumps({
-                'message': '초기 관리자 API 키가 생성되었습니다.',
+                'message': 'Initial admin API key created successfully',
                 'api_key': {
                     'id': admin_key.id,
                     'key': admin_key.key,
