@@ -13,6 +13,7 @@ Globals:
         STORING_ORDERS_TABLE: "StoringOrders"
         PACKAGES_TABLE: "Packages"
         PICKSLIPS_TABLE: "PickSlips"
+        API_KEYS_TABLE: "api_keys"
 
 Resources:
   ########################
@@ -24,8 +25,57 @@ Resources:
       StageName: Prod
       Cors:
         AllowMethods: "'GET,POST,OPTIONS'"
-        AllowHeaders: "'Content-Type,Authorization'"
+        AllowHeaders: "'Content-Type,Authorization,x-api-key'"
         AllowOrigin: "'*'"
+
+  ########################
+  # API Keys Table
+  ########################
+  ApiKeysTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: api_keys
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+        - AttributeName: key
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: key-index
+          KeySchema:
+            - AttributeName: key
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+          ProvisionedThroughput:
+            ReadCapacityUnits: 5
+            WriteCapacityUnits: 5
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+
+  ########################
+  # API Key Management Function
+  ########################
+  ApiKeyManagementFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: "apiKeyManagement"
+      CodeUri: src/common/
+      Handler: handlers.api_key_handler.create_api_key
+      Policies:
+        - AWSLambdaBasicExecutionRole
+        - AmazonDynamoDBFullAccess
+      Events:
+        CreateApiKeyApi:
+          Type: Api
+          Properties:
+            RestApiId: !Ref WmsApi
+            Path: /api-keys
+            Method: POST
 
   ########################
   # 1) StoringOrderValidityCheck 함수

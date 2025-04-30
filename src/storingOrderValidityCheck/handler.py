@@ -9,6 +9,7 @@ import os
 import boto3
 from decimal import Decimal
 import logging
+from common.middleware.api_key_middleware import require_api_key
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -47,6 +48,7 @@ def convert_decimal_to_float(obj):
         return [convert_decimal_to_float(i) for i in obj]
     return obj
 
+@require_api_key('storing:check')
 def lambda_handler(event, context):
     try:
         if isinstance(event, dict) and 'body' in event:
