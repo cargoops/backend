@@ -17,6 +17,19 @@ Globals:
 
 Resources:
   ########################
+  # Lambda Layer
+  ########################
+  DependenciesLayer:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      LayerName: dependencies-layer
+      Description: Dependencies for the application
+      ContentUri: dependencies/
+      CompatibleRuntimes:
+        - python3.9
+      RetentionPolicy: Retain
+
+  ########################
   # API Gateway
   ########################
   WmsApi:
@@ -66,6 +79,8 @@ Resources:
       FunctionName: "apiKeyManagement"
       CodeUri: src/
       Handler: common.handlers.api_key_handler.create_api_key
+      Layers:
+        - !Ref DependenciesLayer
       Policies:
         - AWSLambdaBasicExecutionRole
         - AmazonDynamoDBFullAccess
