@@ -37,10 +37,10 @@ Resources:
     Properties:
       StageName: Prod
       Cors:
-        AllowMethods: "*"
-        AllowHeaders: "Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,x-api-key"
-        AllowOrigin: "*"
-        MaxAge: "600"
+        AllowMethods: "'GET,POST,PUT,DELETE,OPTIONS'"
+        AllowHeaders: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,x-api-key'"
+        AllowOrigin: "'*'"
+        MaxAge: 600
 
   ########################
   # API Keys Table
