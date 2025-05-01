@@ -3,6 +3,7 @@ import os
 import boto3
 from decimal import Decimal
 from common.middleware.api_key_middleware import require_api_key
+from common.utils import make_response, handle_options
 
 dynamodb = boto3.resource('dynamodb')
 table = dynamodb.Table(os.environ['PACKAGES_TABLE'])
@@ -16,70 +17,36 @@ def convert_decimal_to_float(obj):
         return [convert_decimal_to_float(i) for i in obj]
     return obj
 
-@require_api_key('package:read')
+@require_api_key('package:query')
 def lambda_handler(event, context):
+    # OPTIONS 요청 처리
+    if event.get('httpMethod') == 'OPTIONS':
+        return handle_options()
+
     try:
-        params = event.get("queryStringParameters") or {}
-        package_id = params.get("packageId")
+        # 쿼리 파라미터에서 package_id 가져오기
+        query_parameters = event.get('queryStringParameters', {})
+        if not query_parameters or 'package_id' not in query_parameters:
+            return make_response(400, {'message': 'package_id is required'})
 
-        if not package_id:
-            return {
-                'statusCode': 400,
-                'headers': {
-                    'Content-Type': 'application/json',
-                    'Access-Control-Allow-Origin': '*',
-                    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-                    'Access-Control-Allow-Headers': 'Content-Type, x-api-key'
-                },
-                'body': json.dumps({
-                    'message': 'Missing packageId'
-                })
+        package_id = query_parameters['package_id']
+
+        # DynamoDB에서 패키지 정보 조회
+        response = table.get_item(
+            Key={
+                'package_id': package_id
             }
+        )
 
-        response = table.get_item(Key={'packageId': package_id})
-        item = response.get('Item')
+        # 패키지가 존재하지 않는 경우
+        if 'Item' not in response:
+            return make_response(404, {'message': 'Package not found'})
 
-        if not item:
-            return {
-                'statusCode': 404,
-                'headers': {
-                    'Content-Type': 'application/json',
-                    'Access-Control-Allow-Origin': '*',
-                    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-                    'Access-Control-Allow-Headers': 'Content-Type, x-api-key'
-                },
-                'body': json.dumps({
-                    'message': 'Package not found'
-                })
-            }
-
-        item = convert_decimal_to_float(item)
-        json = {
-            'statusCode': 200,
-            'headers': {
-                'Content-Type': 'application/json',
-                'Access-Control-Allow-Origin': '*',
-                'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-                'Access-Control-Allow-Headers': 'Content-Type, x-api-key'
-            },
-            'body': json.dumps({
-                'data': item
-            })
-        }
-        print("응답 결과: ", json)
-        return json
+        # Decimal 타입을 float로 변환
+        item = convert_decimal_to_float(response['Item'])
+        
+        return make_response(200, {'data': item})
 
     except Exception as e:
         print(f"Error: {e}")
-        return {
-            'statusCode': 500,
-            'headers': {
-                'Content-Type': 'application/json',
-                'Access-Control-Allow-Origin': '*',
-                'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-                'Access-Control-Allow-Headers': 'Content-Type, x-api-key'
-            },
-            'body': json.dumps({
-                'message': 'Internal Server Error'
-            })
-        }
+        return make_response(500, {'message': 'Internal Server Error'})

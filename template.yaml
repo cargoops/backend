@@ -36,6 +36,14 @@ Resources:
     Type: AWS::Serverless::Api
     Properties:
       StageName: Prod
+      Cors:
+        AllowMethods: "'GET,POST,PUT,DELETE,OPTIONS'"
+        AllowHeaders: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,x-api-key'"
+        AllowOrigin: "'*'"
+        MaxAge: 600
+      Auth:
+        DefaultAuthorizer: NONE
+        ApiKeyRequired: false
 
   ########################
   # API Keys Table
