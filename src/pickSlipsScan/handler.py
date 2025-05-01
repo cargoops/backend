@@ -2,6 +2,7 @@ import json
 import os
 import boto3
 from decimal import Decimal
+from common.middleware.api_key_middleware import require_api_key
 
 dynamodb = boto3.resource('dynamodb')
 table = dynamodb.Table(os.environ['PICKSLIPS_TABLE'])
@@ -15,6 +16,7 @@ def convert_decimal_to_float(obj):
         return [convert_decimal_to_float(i) for i in obj]
     return obj
 
+@require_api_key('pickslip:scan')
 def lambda_handler(event, context):
     try:
         response = table.scan()
