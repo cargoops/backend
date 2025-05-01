@@ -26,8 +26,21 @@ def lambda_handler(event, context):
     try:
         response = table.scan()
         items = convert_decimal_to_float(response.get('Items', []))
-        return make_response(200, {'data': items})
-        
+        json = {
+            'statusCode': 200,
+            'headers': {
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+                'Access-Control-Allow-Headers': 'Content-Type, x-api-key'
+            },
+            'body': json.dumps({
+                'data': items
+            })
+        }
+        print("응답 결과: ", json)
+        return json
+    
     except Exception as e:
         print(f"Error: {e}")
         return make_response(500, {'message': 'Internal Server Error'})

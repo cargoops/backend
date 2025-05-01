@@ -21,8 +21,7 @@ def lambda_handler(event, context):
     try:
         response = table.scan()
         items = convert_decimal_to_float(response.get('Items', []))
-        
-        return {
+        json = {
             'statusCode': 200,
             'headers': {
                 'Content-Type': 'application/json',
@@ -34,6 +33,8 @@ def lambda_handler(event, context):
                 'data': items
             })
         }
+        print("응답 결과: ", json)
+        return json
         
     except Exception as e:
         print(f"Error: {e}")
