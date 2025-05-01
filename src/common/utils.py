@@ -11,7 +11,10 @@ def make_response(status_code: int, body: dict = None):
     logger.info(f"Body: {json.dumps(body, indent=2) if body else 'None'}")
     
     headers = {
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token"
     }
     
     logger.info("=== 헤더 ===")
