@@ -14,12 +14,6 @@ Globals:
         PACKAGES_TABLE: "Packages"
         PICKSLIPS_TABLE: "PickSlips"
         API_KEYS_TABLE: "api_keys"
-  Api:
-    Cors:
-      AllowMethods: "'*'"
-      AllowHeaders: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,x-api-key'"
-      AllowOrigin: "'*'"
-      MaxAge: "'600'"
 
 Resources:
   ########################
@@ -43,10 +37,10 @@ Resources:
     Properties:
       StageName: Prod
       Cors:
-        AllowMethods: "'*'"
-        AllowHeaders: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,x-api-key'"
-        AllowOrigin: "'*'"
-        MaxAge: "'600'"
+        AllowMethods: "*"
+        AllowHeaders: "Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,x-api-key"
+        AllowOrigin: "*"
+        MaxAge: "600"
 
   ########################
   # API Keys Table
