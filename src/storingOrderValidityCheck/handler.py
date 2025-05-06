@@ -57,41 +57,71 @@ def lambda_handler(event, context):
 
     try:
         # 요청 바디 파싱
-        body = json.loads(event.get('body', '{}'))
+        if isinstance(event, dict) and 'body' in event:
+            body = json.loads(event['body'])  # API Gateway 호출 시
+        else:
+            body = event  # AWS IoT 메시지 또는 기타 직접 전달
+        storing_order_id = body.get("storingOrderId")
+        input_awb = body.get("airwayBillNumber")
+        input_boe = body.get("billOfEntryId")
+
+        # 필수값 검증
+        if not storing_order_id or not input_awb or not input_boe:
+            logger.warning("⚠️ 필수 입력값 누락")
+            return make_response(400, {'message': 'Missing required fields'})
+
+        # 1. 테이블에서 Get
+        logger.info(f"🔎 storingOrderId: {storing_order_id} 조회 시작")
+        response = storing_orders_table.get_item(Key={'storingOrderId': storing_order_id})
+        item = response.get('Item')
+
+        if not item:
+            return make_response(404, {'message': 'StoringOrder not found'})
         
-        # 필수 필드 검증
-        required_fields = ['storing_order_id', 'package_id', 'quantity']
-        for field in required_fields:
-            if field not in body:
-                return make_response(400, {'message': f'Missing required field: {field}'})
-        
-        # 입고 주문 ID로 기존 주문 조회
-        response = storing_orders_table.get_item(
-            Key={
-                'storing_order_id': body['storing_order_id']
-            }
-        )
-        
-        # 입고 주문이 존재하지 않는 경우
-        if 'Item' not in response:
-            return make_response(404, {'message': 'Storing order not found'})
-            
-        storing_order = response['Item']
-        
-        # 패키지 ID 검증
-        if storing_order['package_id'] != body['package_id']:
-            return make_response(400, {'message': 'Package ID does not match'})
-            
-        # 수량 검증
-        if storing_order['quantity'] != Decimal(str(body['quantity'])):
-            return make_response(400, {'message': 'Quantity does not match'})
-            
-        # 모든 검증 통과
-        return make_response(200, {'message': 'Valid storing order'})
-        
+        # 2. 데이터 비교
+        db_awb = item.get("airwayBillNumber")
+        db_boe = item.get("billOfEntryId")
+        logger.info(f"📦 DB값: AWB={db_awb}, BOE={db_boe} / 입력값: AWB={input_awb}, BOE={input_boe}")
+
+        if db_awb == input_awb and db_boe == input_boe:
+            # 3. 상태 업데이트 (status -> 'TQ')
+            storing_orders_table.update_item(
+                Key={'storingOrderId': storing_order_id},
+                UpdateExpression="SET #st = :tqStatus",
+                ExpressionAttributeValues={":tqStatus": "TQ"},
+                ExpressionAttributeNames={"#st": "status"}
+            )
+
+            # 4. 연결된 모든 패키지들의 상태도 TQ로 업데이트
+            packages = item.get('packages', [])
+            for package_id in packages:
+                try:
+                    packages_table.update_item(
+                        Key={'packageId': package_id},
+                        UpdateExpression="SET #st = :tqStatus",
+                        ExpressionAttributeValues={":tqStatus": "TQ"},
+                        ExpressionAttributeNames={"#st": "status"}
+                    )
+                except Exception as e:
+                    logger.error(f"Error updating package {package_id}: {e}")
+                    # 개별 패키지 업데이트 실패는 전체 작업을 중단하지 않음
+            # 👉 MQTT 요청인 경우에만 응답 발행
+            if not ('body' in event and isinstance(event['body'], str)):
+                publish_response_to_iot({
+                    'message': '✅ StoringOrder status updated to TQ',
+                    'storingOrderId': storing_order_id
+                })
+            return make_response(200, {'message': 'StoringOrder and related packages status updated to TQ'})
+        else:
+            logger.warning("❌ 값 불일치 - 상태 변경되지 않음")
+            publish_response_to_iot({
+                'message': '❌ airwayBillNumber or billOfEntryId mismatch',
+                'storingOrderId': storing_order_id
+            })
+            return make_response(400, {'message': 'airwayBillNumber or billOfEntryId mismatch'})
+
     except json.JSONDecodeError:
         return make_response(400, {'message': 'Invalid JSON in request body'})
-        
     except Exception as e:
-        print(f"Error: {e}")
+        logger.error(f"🚨 예외 발생!: {e}")
         return make_response(500, {'message': 'Internal Server Error'})
