@@ -1,234 +1,186 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
-Description: "Example Warehouse Management System with 4 Lambdas"
+Description: >
+  StoringOrders/Packages backend with API Key→Role mapping.
 
 Globals:
   Function:
     Runtime: python3.9
-    Timeout: 15
+    Timeout: 10
     MemorySize: 128
     Environment:
       Variables:
-        MY_REGION: "us-east-2"
-        STORING_ORDERS_TABLE: "StoringOrders"
-        PACKAGES_TABLE: "Packages"
-        PICKSLIPS_TABLE: "PickSlips"
-        API_KEYS_TABLE: "api_keys"
+        STORING_ORDERS_TABLE: !Ref StoringOrdersTable
+        PACKAGES_TABLE:       !Ref PackagesTable
+        API_KEYS_TABLE:       !Ref ApiKeysTable
 
 Resources:
-  ########################
-  # Lambda Layer
-  ########################
-  DependenciesLayer:
-    Type: AWS::Serverless::LayerVersion
-    Properties:
-      LayerName: dependencies-layer
-      Description: Dependencies for the application
-      ContentUri: dependencies/
-      CompatibleRuntimes:
-        - python3.9
-      RetentionPolicy: Retain
 
-  ########################
-  # API Gateway
-  ########################
-  WmsApi:
-    Type: AWS::Serverless::Api
-    Properties:
-      StageName: Prod
-      Cors:
-        AllowMethods: "'GET,POST,PUT,DELETE,OPTIONS'"
-        AllowHeaders: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,x-api-key'"
-        AllowOrigin: "'*'"
-        MaxAge: 600
-      Auth:
-        DefaultAuthorizer: NONE
-        ApiKeyRequired: false
+  # ─────── DynamoDB Tables ───────
 
-  ########################
-  # API Keys Table
-  ########################
-  ApiKeysTable:
-    Type: AWS::DynamoDB::Table
+  StoringOrdersTable:
+    Type: AWS::Serverless::SimpleTable
     Properties:
-      TableName: api_keys
-      AttributeDefinitions:
-        - AttributeName: id
-          AttributeType: S
-        - AttributeName: key
-          AttributeType: S
-      KeySchema:
-        - AttributeName: id
-          KeyType: HASH
-      GlobalSecondaryIndexes:
-        - IndexName: key-index
+      TableName: StoringOrders
+      PrimaryKey:
+        Name: storing_order_id
+        Type: String
+      # so we can Query by receiver_id
+      SecondaryIndexes:
+        - IndexName: ReceiverIndex
           KeySchema:
-            - AttributeName: key
+            - AttributeName: receiver_id
               KeyType: HASH
           Projection:
             ProjectionType: ALL
-          ProvisionedThroughput:
-            ReadCapacityUnits: 5
-            WriteCapacityUnits: 5
-      ProvisionedThroughput:
-        ReadCapacityUnits: 5
-        WriteCapacityUnits: 5
 
-  ########################
-  # Initial Admin Key Function
-  ########################
-  InitAdminKeyFunction:
+  PackagesTable:
+    Type: AWS::Serverless::SimpleTable
+    Properties:
+      TableName: Packages
+      PrimaryKey:
+        Name: package_id
+        Type: String
+      SecondaryIndexes:
+        - IndexName: StoringOrderIndex
+          KeySchema:
+            - AttributeName: storing_order_id
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+
+  ApiKeysTable:
+    Type: AWS::Serverless::SimpleTable
+    Properties:
+      TableName: ApiKeys
+      PrimaryKey:
+        Name: api_key
+        Type: String
+
+  # ─────── Lambda Authorizer ───────
+
+  AuthorizerFunction:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: "initAdminKey"
-      CodeUri: src/
-      Handler: common.handlers.init_admin_key.lambda_handler
-      Layers:
-        - !Ref DependenciesLayer
+      Handler: authorizer.app.lambda_handler
       Policies:
-        - AWSLambdaBasicExecutionRole
-        - AmazonDynamoDBFullAccess
-      Events:
-        CreateInitialAdminKeyApi:
-          Type: Api
-          Properties:
-            RestApiId: !Ref WmsApi
-            Path: /init-admin-key
-            Method: POST
+        - Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action:
+                - dynamodb:GetItem
+              Resource: !GetAtt ApiKeysTable.Arn
 
-  ########################
-  # API Key Management Function
-  ########################
-  ApiKeyManagementFunction:
+  # ─────── API Gateway ───────
+
+  Api:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: StoringOrdersAPI
+      StageName: Prod
+      Auth:
+        DefaultAuthorizer: LambdaTokenAuthorizer
+        Authorizers:
+          LambdaTokenAuthorizer:
+            FunctionArn: !GetAtt AuthorizerFunction.Arn
+            Identity:
+              Headers:
+                - x-api-key
+      Cors:
+        AllowOrigin:  "'*'"
+        AllowHeaders: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+        AllowMethods: "'OPTIONS,GET,POST,PUT'"
+      DefinitionBody:
+        openapi: '3.0.1'
+        info:
+          title: StoringOrders API
+          version: 1.0
+        paths:
+          /storing-orders:
+            get:
+              security:
+                - LambdaTokenAuthorizer: []
+              x-amazon-apigateway-integration:
+                uri: !Sub >-
+                  arn:aws:apigateway:${AWS::Region}:lambda
+                  /path/2015-03-31/functions/${ReadStoringOrdersFunction.Arn}/invocations
+                httpMethod: POST
+                type: aws_proxy
+
+          /storing-orders/receive:
+            post:
+              security:
+                - LambdaTokenAuthorizer: []
+              x-amazon-apigateway-integration:
+                uri: !Sub >-
+                  arn:aws:apigateway:${AWS::Region}:lambda
+                  /path/2015-03-31/functions/${ReceiveOrderFunction.Arn}/invocations
+                httpMethod: POST
+                type: aws_proxy
+
+          /storing-orders/discrepancy:
+            put:
+              security:
+                - LambdaTokenAuthorizer: []
+              x-amazon-apigateway-integration:
+                uri: !Sub >-
+                  arn:aws:apigateway:${AWS::Region}:lambda
+                  /path/2015-03-31/functions/${UpdateDiscrepancyFunction.Arn}/invocations
+                httpMethod: POST
+                type: aws_proxy
+
+  # ─────── Business Lambdas ───────
+
+  ReadStoringOrdersFunction:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: "apiKeyManagement"
-      CodeUri: src/
-      Handler: common.handlers.api_key_handler.create_api_key
-      Layers:
-        - !Ref DependenciesLayer
-      Policies:
-        - AWSLambdaBasicExecutionRole
-        - AmazonDynamoDBFullAccess
+      Handler: read_storing_orders.app.lambda_handler
       Events:
-        CreateApiKeyApi:
+        ReadStoringOrders:
           Type: Api
           Properties:
-            RestApiId: !Ref WmsApi
-            Path: /api-keys
-            Method: POST
-
-  ########################
-  # 1) StoringOrderValidityCheck 함수
-  ########################
-  StoringOrderValidityCheckFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      FunctionName: "storingOrderValidityCheck"
-      CodeUri: src/
-      Handler: storingOrderValidityCheck.handler.lambda_handler
-      Layers:
-        - !Ref DependenciesLayer
-      Policies:
-        - AWSLambdaBasicExecutionRole
-        - AmazonDynamoDBFullAccess
-      Events:
-        CheckStoringOrderApi:
-          Type: Api
-          Properties:
-            RestApiId: !Ref WmsApi
-            Path: /storing-order/check
-            Method: POST
-
-  ########################
-  # 2) PackageQuery 함수
-  ########################
-  PackageQueryFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      FunctionName: "packageQuery"
-      CodeUri: src/
-      Handler: packageQuery.handler.lambda_handler
-      Layers:
-        - !Ref DependenciesLayer
-      Policies:
-        - AWSLambdaBasicExecutionRole
-        - AmazonDynamoDBFullAccess
-      Events:
-        GetPackageApi:
-          Type: Api
-          Properties:
-            RestApiId: !Ref WmsApi
-            Path: /package
-            Method: GET
-
-  ########################
-  # 3) PickSlipsScan 함수
-  ########################
-  PickSlipsScanFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      FunctionName: "pickSlipsScan"
-      CodeUri: src/
-      Handler: pickSlipsScan.handler.lambda_handler
-      Layers:
-        - !Ref DependenciesLayer
-      Policies:
-        - AWSLambdaBasicExecutionRole
-        - AmazonDynamoDBFullAccess
-      Events:
-        GetPickSlipsApi:
-          Type: Api
-          Properties:
-            RestApiId: !Ref WmsApi
-            Path: /pickslips
-            Method: GET
-
-  ########################
-  # 4) StoringOrdersScan 함수
-  ########################
-  StoringOrdersScanFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      FunctionName: "storingOrdersScan"
-      CodeUri: src/
-      Handler: storingOrdersScan.handler.lambda_handler
-      Layers:
-        - !Ref DependenciesLayer
-      Policies:
-        - AWSLambdaBasicExecutionRole
-        - AmazonDynamoDBFullAccess
-      Events:
-        GetStoringOrdersApi:
-          Type: Api
-          Properties:
-            RestApiId: !Ref WmsApi
             Path: /storing-orders
-            Method: GET
+            Method: get
+            RestApiId: !Ref Api
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: StoringOrdersTable
+        - DynamoDBQueryPolicy:
+            TableName: StoringOrdersTable
 
-  ########################
-  # 5) PackagesScan 함수
-  ########################
-  PackagesScanFunction:
+  ReceiveOrderFunction:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: "packagesScan"
-      CodeUri: src/
-      Handler: packagesScan.handler.lambda_handler
-      Layers:
-        - !Ref DependenciesLayer
-      Policies:
-        - AWSLambdaBasicExecutionRole
-        - AmazonDynamoDBFullAccess
+      Handler: receive_order.app.lambda_handler
       Events:
-        GetPackagesApi:
+        ReceiveOrder:
           Type: Api
           Properties:
-            RestApiId: !Ref WmsApi
-            Path: /packages
-            Method: GET
+            Path: /storing-orders/receive
+            Method: post
+            RestApiId: !Ref Api
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: StoringOrdersTable
+        - DynamoDBCrudPolicy:
+            TableName: PackagesTable
+
+  UpdateDiscrepancyFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: update_discrepancy.app.lambda_handler
+      Events:
+        UpdateDiscrepancy:
+          Type: Api
+          Properties:
+            Path: /storing-orders/discrepancy
+            Method: put
+            RestApiId: !Ref Api
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: StoringOrdersTable
 
 Outputs:
   ApiUrl:
-    Description: "API Gateway endpoint URL"
-    Value: !Sub "https://${WmsApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/"
+    Description: "Invoke URL"
+    Value: !Sub "https://${Api}.execute-api.${AWS::Region}.amazonaws.com/Prod"
