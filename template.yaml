@@ -17,16 +17,20 @@ Globals:
 Resources:
 
   # ─────── DynamoDB Tables ───────
-
   StoringOrdersTable:
-    Type: AWS::Serverless::SimpleTable
+    Type: AWS::DynamoDB::Table
     Properties:
       TableName: StoringOrders
-      PrimaryKey:
-        Name: storing_order_id
-        Type: String
-      # so we can Query by receiver_id
-      SecondaryIndexes:
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: storing_order_id
+          AttributeType: S
+        - AttributeName: receiver_id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: storing_order_id
+          KeyType: HASH
+      GlobalSecondaryIndexes:
         - IndexName: ReceiverIndex
           KeySchema:
             - AttributeName: receiver_id
@@ -35,13 +39,19 @@ Resources:
             ProjectionType: ALL
 
   PackagesTable:
-    Type: AWS::Serverless::SimpleTable
+    Type: AWS::DynamoDB::Table
     Properties:
       TableName: Packages
-      PrimaryKey:
-        Name: package_id
-        Type: String
-      SecondaryIndexes:
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: package_id
+          AttributeType: S
+        - AttributeName: storing_order_id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: package_id
+          KeyType: HASH
+      GlobalSecondaryIndexes:
         - IndexName: StoringOrderIndex
           KeySchema:
             - AttributeName: storing_order_id
