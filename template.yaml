@@ -154,9 +154,7 @@ Resources:
             RestApiId: !Ref Api
       Policies:
         - DynamoDBReadPolicy:
-            TableName: StoringOrdersTable
-        - DynamoDBQueryPolicy:
-            TableName: StoringOrdersTable
+            TableName: !Ref StoringOrdersTable
 
   ReceiveOrderFunction:
     Type: AWS::Serverless::Function
