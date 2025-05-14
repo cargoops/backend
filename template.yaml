@@ -100,45 +100,7 @@ Resources:
         AllowOrigin:  "'*'"
         AllowHeaders: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
         AllowMethods: "'OPTIONS,GET,POST,PUT'"
-      DefinitionBody:
-        openapi: '3.0.1'
-        info:
-          title: StoringOrders API
-          version: 1.0
-        paths:
-          /storing-orders:
-            get:
-              security:
-                - LambdaTokenAuthorizer: []
-              x-amazon-apigateway-integration:
-                uri: !Sub >-
-                  arn:aws:apigateway:${AWS::Region}:lambda
-                  /path/2015-03-31/functions/${ReadStoringOrdersFunction.Arn}/invocations
-                httpMethod: POST
-                type: aws_proxy
-
-          /storing-orders/receive:
-            post:
-              security:
-                - LambdaTokenAuthorizer: []
-              x-amazon-apigateway-integration:
-                uri: !Sub >-
-                  arn:aws:apigateway:${AWS::Region}:lambda
-                  /path/2015-03-31/functions/${ReceiveOrderFunction.Arn}/invocations
-                httpMethod: POST
-                type: aws_proxy
-
-          /storing-orders/discrepancy:
-            put:
-              security:
-                - LambdaTokenAuthorizer: []
-              x-amazon-apigateway-integration:
-                uri: !Sub >-
-                  arn:aws:apigateway:${AWS::Region}:lambda
-                  /path/2015-03-31/functions/${UpdateDiscrepancyFunction.Arn}/invocations
-                httpMethod: POST
-                type: aws_proxy
-
+      
   # ─────── Business Lambdas ───────
 
   ReadStoringOrdersFunction:
