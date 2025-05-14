@@ -124,6 +124,9 @@ Resources:
             Path: /storing-orders
             Method: get
             RestApiId: !Ref Api
+            Auth:
+              Authorizer: LambdaTokenAuthorizer
+              ApiKeyRequired: false
       Policies:
         - DynamoDBReadPolicy:
             TableName: !Ref StoringOrdersTable
@@ -139,6 +142,9 @@ Resources:
             Path: /storing-orders/receive
             Method: post
             RestApiId: !Ref Api
+            Auth:
+              Authorizer: LambdaTokenAuthorizer
+              ApiKeyRequired: false
       Policies:
         - DynamoDBCrudPolicy:
             TableName: StoringOrdersTable
@@ -156,6 +162,9 @@ Resources:
             Path: /storing-orders/discrepancy
             Method: put
             RestApiId: !Ref Api
+            Auth:
+              Authorizer: LambdaTokenAuthorizer
+              ApiKeyRequired: false
       Policies:
         - DynamoDBCrudPolicy:
             TableName: StoringOrdersTable
