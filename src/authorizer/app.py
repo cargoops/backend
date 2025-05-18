@@ -18,7 +18,7 @@ def generate_policy(principal, effect, resource, context=None):
     return policy
 
 def lambda_handler(event, context):
-    token = event['headers'].get('x-api-key')
+    token = event.get('authorizationToken')
     print(event)
     if not token:
         return generate_policy('anon','Deny', event['methodArn'])
