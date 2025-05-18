@@ -19,6 +19,11 @@ items = [
         'api_key': 'adm-12345678',
         'employee_id': 'ADMIN01',
         'role': 'admin'
+    },
+    {
+        'api_key': 'adm',
+        'employee_id': 'ADMIN02',
+        'role': 'admin'
     }
 ]
 
