@@ -164,6 +164,22 @@ Resources:
         - DynamoDBCrudPolicy:
             TableName: StoringOrdersTable
 
+  GetApiKeyRecordFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: get_api_key_record.app.lambda_handler
+      CodeUri: src
+      Events:
+        GetApiKeyRecord:
+          Type: Api
+          Properties:
+            Path: /api-key
+            Method: get
+            RestApiId: !Ref Api
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref ApiKeysTable
+
 Outputs:
   ApiUrl:
     Description: "Invoke URL"
