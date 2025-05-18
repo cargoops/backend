@@ -82,7 +82,8 @@ Resources:
   AuthorizerFunction:
     Type: AWS::Serverless::Function
     Properties:
-      Handler: authorizer.app.lambda_handler
+      Handler: app.lambda_handler
+      CodeUri: src/authorizer
       Policies:
         - Version: '2012-10-17'
           Statement:
@@ -116,7 +117,8 @@ Resources:
   ReadStoringOrdersFunction:
     Type: AWS::Serverless::Function
     Properties:
-      Handler: read_storing_orders.app.lambda_handler
+      Handler: app.lambda_handler
+      CodeUri: src/read_storing_orders
       Events:
         ReadStoringOrders:
           Type: Api
@@ -131,7 +133,8 @@ Resources:
   ReceiveOrderFunction:
     Type: AWS::Serverless::Function
     Properties:
-      Handler: receive_order.app.lambda_handler
+      Handler: app.lambda_handler
+      CodeUri: src/receive_order
       Events:
         ReceiveOrder:
           Type: Api
@@ -148,7 +151,8 @@ Resources:
   UpdateDiscrepancyFunction:
     Type: AWS::Serverless::Function
     Properties:
-      Handler: update_discrepancy.app.lambda_handler
+      Handler: app.lambda_handler
+      CodeUri: src/update_discrepancy
       Events:
         UpdateDiscrepancy:
           Type: Api
