@@ -12,6 +12,7 @@ def get_api_key_record(api_key: str):
     return resp.get('Item')
 
 def respond(status_code: int, body: dict):
+    print(body)
     return {
         'statusCode': status_code,
         'headers': {
