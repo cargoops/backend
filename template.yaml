@@ -144,9 +144,9 @@ Resources:
             RestApiId: !Ref Api
       Policies:
         - DynamoDBCrudPolicy:
-            TableName: StoringOrdersTable
+            TableName: !Ref StoringOrdersTable
         - DynamoDBCrudPolicy:
-            TableName: PackagesTable
+            TableName: !Ref PackagesTable
 
   UpdateDiscrepancyFunction:
     Type: AWS::Serverless::Function
@@ -162,7 +162,7 @@ Resources:
             RestApiId: !Ref Api
       Policies:
         - DynamoDBCrudPolicy:
-            TableName: StoringOrdersTable
+            TableName: !Ref StoringOrdersTable
 
   GetApiKeyRecordFunction:
     Type: AWS::Serverless::Function
