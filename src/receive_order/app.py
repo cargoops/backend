@@ -40,17 +40,16 @@ def lambda_handler(event, context):
             ExpressionAttributeValues={':s':'INSPECTION-FAILED', ':d': detail}
         )
         # update all packages
-        pkgs = packages_table.query(
-            IndexName='StoringOrderIndex',
-            KeyConditionExpression=Key('storing_order_id').eq(sid)
-        ).get('Items', [])
-        for p in pkgs:
-            packages_table.update_item(
-                Key={'package_id': p['package_id']},
-                UpdateExpression="SET #s=:s",
-                ExpressionAttributeNames={'#s':'status'},
-                ExpressionAttributeValues={':s':'INSPECTION-FAILED'}
-            )
+        packages_str = order.get('packages', '[]')
+        package_ids = packages_str.strip('[]').split(';')
+        for package_id in package_ids:
+            if package_id:  # 빈 문자열이 아닌 경우에만 처리
+                packages_table.update_item(
+                    Key={'package_id': package_id},
+                    UpdateExpression="SET #s=:s",
+                    ExpressionAttributeNames={'#s':'status'},
+                    ExpressionAttributeValues={':s':'INSPECTION-FAILED'}
+                )
         return respond(400, {'message':'Inspection failed','discrepancy_detail': detail})
 
     # mark RECEIVED
@@ -62,15 +61,14 @@ def lambda_handler(event, context):
         ExpressionAttributeValues={':s':'RECEIVED', ':r': now}
     )
     # update packages → READY-FOR-TQ
-    pkgs = packages_table.query(
-        IndexName='StoringOrderIndex',
-        KeyConditionExpression=Key('storing_order_id').eq(sid)
-    ).get('Items', [])
-    for p in pkgs:
-        packages_table.update_item(
-            Key={'package_id': p['package_id']},
-            UpdateExpression="SET #s=:s",
-            ExpressionAttributeNames={'#s':'status'},
-            ExpressionAttributeValues={':s':'READY-FOR-TQ'}
-        )
+    packages_str = order.get('packages', '[]')
+    package_ids = packages_str.strip('[]').split(';')
+    for package_id in package_ids:
+        if package_id:  # 빈 문자열이 아닌 경우에만 처리
+            packages_table.update_item(
+                Key={'package_id': package_id},
+                UpdateExpression="SET #s=:s",
+                ExpressionAttributeNames={'#s':'status'},
+                ExpressionAttributeValues={':s':'READY-FOR-TQ'}
+            )
     return respond(200, {'message':'Order received'})
