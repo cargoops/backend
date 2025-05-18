@@ -108,9 +108,9 @@ Resources:
               Headers:
                 - x-api-key
       Cors:
-        AllowOrigin:  "'*'"
-        AllowHeaders: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
-        AllowMethods: "'OPTIONS,GET,POST,PUT'"
+        AllowOrigin: "*"
+        AllowHeaders: "Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token"
+        AllowMethods: "OPTIONS,GET,POST,PUT"
       
   # ─────── Business Lambdas ───────
 
@@ -126,6 +126,10 @@ Resources:
             Path: /storing-orders
             Method: get
             RestApiId: !Ref Api
+            Cors:
+              AllowOrigin: "*"
+              AllowHeaders: "Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token"
+              AllowMethods: "OPTIONS,GET,POST,PUT"
       Policies:
         - DynamoDBReadPolicy:
             TableName: !Ref StoringOrdersTable
@@ -142,6 +146,10 @@ Resources:
             Path: /storing-orders/receive
             Method: post
             RestApiId: !Ref Api
+            Cors:
+              AllowOrigin: "*"
+              AllowHeaders: "Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token"
+              AllowMethods: "OPTIONS,GET,POST,PUT"
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref StoringOrdersTable
@@ -160,6 +168,10 @@ Resources:
             Path: /storing-orders/discrepancy
             Method: put
             RestApiId: !Ref Api
+            Cors:
+              AllowOrigin: "*"
+              AllowHeaders: "Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token"
+              AllowMethods: "OPTIONS,GET,POST,PUT"
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref StoringOrdersTable
@@ -176,6 +188,10 @@ Resources:
             Path: /api-key
             Method: get
             RestApiId: !Ref Api
+            Cors:
+              AllowOrigin: "*"
+              AllowHeaders: "Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token"
+              AllowMethods: "OPTIONS,GET,POST,PUT"
             Auth:
               Authorizer: NONE
       Policies:
