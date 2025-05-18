@@ -176,10 +176,6 @@ Resources:
             Path: /api-key
             Method: get
             RestApiId: !Ref Api
-            Cors:
-              AllowOrigin: "*"
-              AllowHeaders: "Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token"
-              AllowMethods: "OPTIONS,GET,POST,PUT"
             Auth:
               Authorizer: NONE
       Policies:
