@@ -21,5 +21,5 @@ def respond(status_code: int, body: dict):
             "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
             "Access-Control-Allow-Headers": "Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token"
         },
-        'body': json.dumps(body)
+        'body': json.dumps(body, default=str)
     }
