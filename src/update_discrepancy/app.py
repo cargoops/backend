@@ -22,7 +22,7 @@ def lambda_handler(event, context):
 
     storing_table.update_item(
         Key={'storing_order_id': sid},
-        UpdateExpression="SET discrepancy_detail = :d",
-        ExpressionAttributeValues={':d': detail}
+        UpdateExpression="SET discrepancy_detail = :d, doc_inspection_result = :f",
+        ExpressionAttributeValues={':d': detail, ':f': 'Failure'}
     )
     return respond(200, {'message':'Discrepancy updated'})
