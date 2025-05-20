@@ -35,9 +35,9 @@ def lambda_handler(event, context):
         # mark FAILED
         storing_table.update_item(
             Key={'storing_order_id': sid},
-            UpdateExpression="SET #s=:s, discrepancy_detail=:d",
+            UpdateExpression="SET #s=:s, discrepancy_detail=:d, doc_inspection_result=:f",
             ExpressionAttributeNames={'#s':'status'},
-            ExpressionAttributeValues={':s':'INSPECTION-FAILED', ':d': detail}
+            ExpressionAttributeValues={':s':'INSPECTION-FAILED', ':d': detail, ':f': 'Failure'}
         )
         # update all packages
         packages_str = order.get('packages', '[]')
@@ -56,9 +56,9 @@ def lambda_handler(event, context):
     now = datetime.datetime.utcnow().isoformat()
     storing_table.update_item(
         Key={'storing_order_id': sid},
-        UpdateExpression="SET #s=:s, received_date=:r",
+        UpdateExpression="SET #s=:s, received_date=:r, doc_inspection_result=:f",
         ExpressionAttributeNames={'#s':'status'},
-        ExpressionAttributeValues={':s':'RECEIVED', ':r': now}
+        ExpressionAttributeValues={':s':'RECEIVED', ':r': now, ':f': 'Success'}
     )
     # update packages → READY-FOR-TQ
     packages_str = order.get('packages', '[]')
