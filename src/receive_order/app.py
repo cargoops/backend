@@ -56,9 +56,9 @@ def lambda_handler(event, context):
     now = datetime.datetime.utcnow().isoformat()
     storing_table.update_item(
         Key={'storing_order_id': sid},
-        UpdateExpression="SET #s=:s, received_date=:r, doc_inspection_result=:f",
+        UpdateExpression="SET #s=:s, received_date=:r, doc_inspection_result=:f, discrepancy_detail=:d",
         ExpressionAttributeNames={'#s':'status'},
-        ExpressionAttributeValues={':s':'RECEIVED', ':r': now, ':f': 'Success'}
+        ExpressionAttributeValues={':s':'RECEIVED', ':r': now, ':f': 'Success', ':d': ''}
     )
     # update packages → READY-FOR-TQ
     packages_str = order.get('packages', '[]')
