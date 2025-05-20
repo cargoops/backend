@@ -14,6 +14,7 @@ def lambda_handler(event, context):
         bill= b['bill_of_entry_id']
         awb = b['airway_bill_number']
         qty = b['quantity']
+        employee_id = b['employee_id']
     except Exception:
         return respond(400, {'message':'Invalid input'})
 
@@ -35,9 +36,9 @@ def lambda_handler(event, context):
         # mark FAILED
         storing_table.update_item(
             Key={'storing_order_id': sid},
-            UpdateExpression="SET #s=:s, discrepancy_detail=:d, doc_inspection_result=:f",
+            UpdateExpression="SET #s=:s, discrepancy_detail=:d, doc_inspection_result=:f, employee_id=:e",
             ExpressionAttributeNames={'#s':'status'},
-            ExpressionAttributeValues={':s':'INSPECTION-FAILED', ':d': detail, ':f': 'Failure'}
+            ExpressionAttributeValues={':s':'INSPECTION-FAILED', ':d': detail, ':f': 'Failure', ':e': employee_id}
         )
         # update all packages
         packages_str = order.get('packages', '[]')
@@ -56,9 +57,9 @@ def lambda_handler(event, context):
     now = datetime.datetime.utcnow().isoformat()
     storing_table.update_item(
         Key={'storing_order_id': sid},
-        UpdateExpression="SET #s=:s, received_date=:r, doc_inspection_result=:f, discrepancy_detail=:d",
+        UpdateExpression="SET #s=:s, received_date=:r, doc_inspection_result=:f, discrepancy_detail=:d, employee_id=:e",
         ExpressionAttributeNames={'#s':'status'},
-        ExpressionAttributeValues={':s':'RECEIVED', ':r': now, ':f': 'Success', ':d': ''}
+        ExpressionAttributeValues={':s':'RECEIVED', ':r': now, ':f': 'Success', ':d': '', ':e': employee_id}
     )
     # update packages → READY-FOR-TQ
     packages_str = order.get('packages', '[]')
