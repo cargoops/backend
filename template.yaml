@@ -182,6 +182,22 @@ Resources:
         - DynamoDBReadPolicy:
             TableName: !Ref ApiKeysTable
 
+  TqQualityCheckFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: tq_quality_check.app.lambda_handler
+      CodeUri: src
+      Events:
+        TqQualityCheck:
+          Type: Api
+          Properties:
+            Path: /tq-quality-check
+            Method: post
+            RestApiId: !Ref Api
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref PackagesTable
+
 Outputs:
   ApiUrl:
     Description: "Invoke URL"
