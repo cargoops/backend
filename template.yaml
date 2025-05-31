@@ -243,6 +243,9 @@ Resources:
           Properties:
             Queue: !GetAtt RfidSqsQueue.Arn
             BatchSize: 10
+      Environment:
+        Variables:
+          ITEMS_TABLE: !Ref ItemsTable
 
 Outputs:
   ApiUrl:
