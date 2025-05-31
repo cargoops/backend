@@ -67,6 +67,18 @@ Resources:
         Name: api_key
         Type: String
 
+  ItemsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: Items
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: rfid_id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: rfid_id
+          KeyType: HASH
+
   # ─────── Lambda Authorizer ───────
 
   AuthorizerInvokePermission:
@@ -198,7 +210,44 @@ Resources:
         - DynamoDBCrudPolicy:
             TableName: !Ref PackagesTable
 
+  RfidSqsQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: rfid-queue
+
+  RfidProducerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: rfid_producer.lambda_handler
+      Runtime: python3.9
+      CodeUri: src
+      Policies:
+        - SQSSendMessagePolicy:
+            QueueName: !GetAtt RfidSqsQueue.QueueName
+      Environment:
+        Variables:
+          SQS_QUEUE_URL: !Ref RfidSqsQueue
+
+  RfidConsumerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: rfid_consumer.lambda_handler
+      Runtime: python3.9
+      CodeUri: src
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ItemsTable
+      Events:
+        SQSTrigger:
+          Type: SQS
+          Properties:
+            Queue: !GetAtt RfidSqsQueue.Arn
+            BatchSize: 10
+
 Outputs:
   ApiUrl:
     Description: "Invoke URL"
     Value: !Sub "https://${Api}.execute-api.${AWS::Region}.amazonaws.com/Prod"
+  IotCoreEndpoint:
+    Description: "IoT Core Data Endpoint"
+    Value: "avt319l6989mq-ats.iot.us-east-2.amazonaws.com"
