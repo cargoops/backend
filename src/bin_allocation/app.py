@@ -1,12 +1,11 @@
 import json
 import random
 import datetime
-from common.utils import packages_table, respond
+from common.utils import packages_table, items_table, respond
 import os
 import boto3
 
 dynamodb = boto3.resource('dynamodb')
-items_table = dynamodb.Table(os.environ['ITEMS_TABLE'])
 
 def lambda_handler(event, context):
     # 1. 인증 및 권한 체크

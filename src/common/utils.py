@@ -5,6 +5,7 @@ from boto3.dynamodb.conditions import Key
 dynamodb        = boto3.resource('dynamodb')
 storing_table   = dynamodb.Table(os.environ['STORING_ORDERS_TABLE'])
 packages_table  = dynamodb.Table(os.environ['PACKAGES_TABLE'])
+items_table     = dynamodb.Table(os.environ['ITEMS_TABLE'])
 api_keys_table  = dynamodb.Table(os.environ['API_KEYS_TABLE'])
 
 def get_api_key_record(api_key: str):
