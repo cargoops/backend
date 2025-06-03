@@ -112,6 +112,14 @@ Resources:
     Properties:
       Name: StoringOrdersAPI
       StageName: Prod
+      Auth:
+        DefaultAuthorizer: LambdaTokenAuthorizer
+        Authorizers:
+          LambdaTokenAuthorizer:
+            FunctionArn: !GetAtt AuthorizerFunction.Arn
+            Identity:
+              Headers:
+                - x-api-key
       Cors:
         AllowOrigin: "'*'"
         AllowHeaders: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
@@ -199,6 +207,11 @@ Resources:
             Path: /api-key
             Method: get
             RestApiId: !Ref Api
+            Auth:
+              Authorizer: NONE
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref ApiKeysTable
 
   TqQualityCheckFunction:
     Type: AWS::Serverless::Function

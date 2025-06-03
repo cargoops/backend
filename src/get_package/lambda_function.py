@@ -3,8 +3,8 @@ import sys
 from common.utils import packages_table, respond
 
 def lambda_handler(event, context):
-    # event에서 package_id 추출
-    package_id = event.get('package_id')
+    # Path parameter에서 package_id 추출
+    package_id = event.get('pathParameters', {}).get('package_id')
     if not package_id:
         return respond(400, {'error': 'package_id가 필요합니다.'})
 
