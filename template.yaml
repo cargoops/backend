@@ -126,6 +126,24 @@ Resources:
       
   # ─────── Business Lambdas ───────
 
+  BinAllocationFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: bin_allocation.app.lambda_handler
+      CodeUri: src
+      Events:
+        BinAllocation:
+          Type: Api
+          Properties:
+            Path: /bin-allocation
+            Method: post
+            RestApiId: !Ref Api
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref PackagesTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ItemsTable
+
   ReadStoringOrdersFunction:
     Type: AWS::Serverless::Function
     Properties:

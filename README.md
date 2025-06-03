@@ -2,7 +2,7 @@
 
 ## Overview
 
-This backend provides APIs for managing storing orders, package inspections, and user authentication/authorization.  
+This backend provides APIs for managing storing orders, package inspections, bin allocation, and user authentication/authorization.  
 It uses AWS Lambda, DynamoDB, and a custom API key-based authorization system.
 
 ---
@@ -69,7 +69,8 @@ https://t4hw5tf1ye.execute-api.us-east-2.amazonaws.com/Prod
     "invoice_number": "string",
     "bill_of_entry_id": "string",
     "airway_bill_number": "string",
-    "quantity": number
+    "quantity": number,
+    "employee_id": "string"
   }
   ```
 - **Behavior:**
@@ -107,15 +108,6 @@ https://t4hw5tf1ye.execute-api.us-east-2.amazonaws.com/Prod
 
 ---
 
-### 5. Authorizer (Lambda)
-
-- **Path:** Used as a Lambda authorizer for API Gateway
-- **Behavior:**  
-  Validates API key and injects `employee_id` and `role` into request context.
-
-
----
-
 ### 5. TQ Quality Check
 
 - **Path:** `/tq-quality-check`
@@ -124,18 +116,55 @@ https://t4hw5tf1ye.execute-api.us-east-2.amazonaws.com/Prod
 - **Body:**
   ```json
   {
-    "package_id": "string"
+    "package_id": "string",
+    "employee_id": "string"
   }
   ```
 - **Behavior:**
   - 인증 및 권한(`role == tq_employee`) 확인
   - 해당 `package_id`의 패키지 status가 `READY-FOR-TQ`일 때만 `READY-FOR-RFID-ATTACH`로 변경
+  - tq_staff_id, tq_quality_check_date도 함께 기록
   - status가 다르거나 인증 실패 시, 적절한 에러 메시지 반환
 - **Response:**
   - `200 OK`: 패키지 상태가 READY-FOR-RFID-ATTACH로 변경됨
   - `400 Bad Request`: 패키지 상태가 READY-FOR-TQ가 아님 또는 입력값 오류
   - `403 Forbidden`: 인증/권한 오류
   - `404 Not Found`: package_id 없음
+
+---
+
+### 6. Bin Allocation
+
+- **Path:** `/bin-allocation`
+- **Method:** `POST`
+- **Authorization:** `Authorization` header with api_key required (`role` must be `binner`)
+- **Body:**
+  ```json
+  {
+    "package_id": "string",
+    "employee_id": "string"
+  }
+  ```
+- **Behavior:**
+  - 인증 및 권한(`role == binner`) 확인
+  - 해당 `package_id`의 패키지 status가 `READY-FOR-BIN-ALLOCATION`일 때만 동작
+  - quantity가 50 이상이면 공간 부족 에러 반환
+  - 그렇지 않으면 1~5 중 랜덤 BIN 할당, bin_allocation, binner_id, bin_allocation_date, status(`READY-FOR-BINNING`) 업데이트
+  - rfid_ids(세미콜론 구분 리스트) 내 각 RFID에 대해 Items 테이블의 status를 `READY-FOR-BINNING`으로 변경
+- **Response:**
+  - `200 OK`: Bin allocation 완료, bin_id, quantity 반환
+  - `400 Bad Request`: 패키지 상태/quantity 오류, 공간 부족 등
+  - `403 Forbidden`: 인증/권한 오류
+  - `404 Not Found`: package_id 없음
+
+---
+
+
+### 7. Authorizer (Lambda)
+
+- **Path:** Used as a Lambda authorizer for API Gateway
+- **Behavior:**  
+  Validates API key and injects `employee_id` and `role` into request context.
 
 ---
 
