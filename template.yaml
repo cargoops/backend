@@ -266,6 +266,22 @@ Resources:
         Variables:
           ITEMS_TABLE: !Ref ItemsTable
 
+  GetPackageFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: get_package.lambda_function.lambda_handler
+      CodeUri: src
+      Events:
+        GetPackage:
+          Type: Api
+          Properties:
+            Path: /package/{package_id}
+            Method: get
+            RestApiId: !Ref Api
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref PackagesTable
+
 Outputs:
   ApiUrl:
     Description: "Invoke URL"

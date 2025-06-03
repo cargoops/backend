@@ -159,12 +159,38 @@ https://t4hw5tf1ye.execute-api.us-east-2.amazonaws.com/Prod
 
 ---
 
-
 ### 7. Authorizer (Lambda)
 
 - **Path:** Used as a Lambda authorizer for API Gateway
 - **Behavior:**  
   Validates API key and injects `employee_id` and `role` into request context.
+
+---
+
+### 8. Get Package
+
+- **Path:** `/package/{package_id}`
+- **Method:** `GET`
+- **Parameters:**
+  - `package_id` (URL path parameter)
+- **Response:**
+  - `200 OK`: 패키지 정보 (JSON)
+  - `400 Bad Request`: package_id 누락
+  - `404 Not Found`: 해당 package_id 없음
+
+**예시 요청:**
+```
+GET /package/PACK001
+```
+
+**예시 응답:**
+```json
+{
+  "package_id": "PKG001",
+  "name": "샘플 패키지",
+  "status": "배송중"
+}
+```
 
 ---
 
