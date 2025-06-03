@@ -5,10 +5,8 @@ import boto3
 from decimal import Decimal
 
 # --- CONFIGURE THESE PATHS AS NEEDED ---
-STORING_CSV = os.path.join(os.path.dirname(__file__), '..', 'data', 'StoringOrders.csv')
-PACKAGES_CSV = os.path.join(os.path.dirname(__file__), '..', 'data', 'Packages.csv')
-ITEMS_CSV = os.path.join(os.path.dirname(__file__), '..', 'data', 'Items.csv')
-REGION       = 'us-east-2'
+DATA_DIR = os.path.join(os.path.dirname(__file__), '..', 'data')
+REGION = 'us-east-2'
 
 def cast_value(val):
     """Convert to int or Decimal, else leave as str (treat empty as None)."""
@@ -41,6 +39,9 @@ def batch_load(table_name, csv_path):
     print(f"✔ Done: {table_name}")
 
 if __name__ == '__main__':
-    batch_load('StoringOrders', STORING_CSV)
-    batch_load('Packages',      PACKAGES_CSV)
-    batch_load('Items',      ITEMS_CSV)
+    # data 디렉토리의 모든 csv 파일에 대해 처리
+    for filename in os.listdir(DATA_DIR):
+        if filename.endswith('.csv'):
+            table_name = os.path.splitext(filename)[0]  # 확장자 제외한 파일명
+            csv_path = os.path.join(DATA_DIR, filename)
+            batch_load(table_name, csv_path)

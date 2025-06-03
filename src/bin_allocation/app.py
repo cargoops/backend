@@ -45,7 +45,7 @@ def lambda_handler(event, context):
     # 6. BIN 할당
     bin_num = random.randint(1, 5)
     bin_id = f"BIN{bin_num}"
-    bin_allocation = json.dumps({bin_id: quantity})
+    bin_allocation = json.dumps({bin_id: int(quantity)})
     now = datetime.datetime.utcnow().isoformat()
 
     # 패키지 테이블 업데이트
@@ -70,4 +70,4 @@ def lambda_handler(event, context):
             ExpressionAttributeValues={':s': 'READY-FOR-BINNING'}
         )
 
-    return respond(200, {'message': 'Bin allocation 완료', 'bin_id': bin_id, 'quantity': quantity})
+    return respond(200, {'message': 'Bin allocation 완료', 'bin_id': bin_id, 'quantity': int(quantity)})
