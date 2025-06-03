@@ -7,6 +7,7 @@ from decimal import Decimal
 # --- CONFIGURE THESE PATHS AS NEEDED ---
 STORING_CSV = os.path.join(os.path.dirname(__file__), '..', 'data', 'StoringOrders.csv')
 PACKAGES_CSV = os.path.join(os.path.dirname(__file__), '..', 'data', 'Packages.csv')
+ITEMS_CSV = os.path.join(os.path.dirname(__file__), '..', 'data', 'Items.csv')
 REGION       = 'us-east-2'
 
 def cast_value(val):
@@ -42,3 +43,4 @@ def batch_load(table_name, csv_path):
 if __name__ == '__main__':
     batch_load('StoringOrders', STORING_CSV)
     batch_load('Packages',      PACKAGES_CSV)
+    batch_load('Items',      ITEMS_CSV)

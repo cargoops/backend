@@ -1,4 +1,4 @@
-storing_order_id,customer_id,order_date,expected_delivery_date,invoice_number,bill_of_entry_id,airway_bill_number,received_date,status,doc_inspection_result,discrepancy_detail,package_quantity,receiver_id,packages
+storing_order_id,customer_id,order_date,expected_delivery_date,invoice_number,bill_of_entry_id,airway_bill_number,received_date,status,doc_inspection_result,discrepancy_detail,package_quantity,receiver_id,package_ids
 SO0001,CUS7818,2025.3.19,2025.6.13,INV0001,BOE0001,AWB0001,,INSPECTION-FAILED,Failure,SO number missing,5,RCV2054,[PACK52702;PACK43138;PACK88172;PACK60897]
 SO0002,CUS4697,2025.3.8,2025.5.20,INV0002,BOE0002,AWB0002,,OPEN,,,4,RCV7088,[PACK61786;PACK11038;PACK64275;PACK45503]
 SO0003,CUS8253,2025.2.8,2025.4.16,INV0003,BOE0003,AWB0003,2025.2.13,RECEIVED,Success,,4,RCV2558,[PACK61829;PACK16938;PACK62599;PACK14388]

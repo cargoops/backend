@@ -1,4 +1,4 @@
-import json
+import json, datetime
 from common.utils import packages_table, respond
 
 def lambda_handler(event, context):
@@ -11,6 +11,7 @@ def lambda_handler(event, context):
     try:
         body = json.loads(event['body'])
         package_id = body['package_id']
+        employee_id = body['employee_id']
     except Exception:
         return respond(400, {'message': '입력값이 올바르지 않습니다.'})
 
@@ -24,11 +25,13 @@ def lambda_handler(event, context):
     if package.get('status') != 'READY-FOR-TQ':
         return respond(400, {'message': f"패키지 상태가 READY-FOR-TQ가 아닙니다. (현재 상태: {package.get('status')})"})
 
+    now = datetime.datetime.utcnow().isoformat()
+
     # 상태 업데이트
     packages_table.update_item(
         Key={'package_id': package_id},
-        UpdateExpression="SET #s=:s",
-        ExpressionAttributeNames={'#s': 'status'},
-        ExpressionAttributeValues={':s': 'READY-FOR-RFID-ATTACH'}
+        UpdateExpression="SET #s=:s, #t=:t, #d=:d",
+        ExpressionAttributeNames={'#s': 'status', '#t': 'tq_staff_id', '#d': 'tq_quality_check_date'},
+        ExpressionAttributeValues={':s': 'READY-FOR-RFID-ATTACH', ':t': employee_id, ':d': now}
     )
     return respond(200, {'message': '패키지 상태가 READY-FOR-RFID-ATTACH로 변경되었습니다.'})

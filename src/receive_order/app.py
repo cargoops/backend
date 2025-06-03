@@ -36,7 +36,7 @@ def lambda_handler(event, context):
         # mark FAILED
         storing_table.update_item(
             Key={'storing_order_id': sid},
-            UpdateExpression="SET #s=:s, discrepancy_detail=:d, doc_inspection_result=:f, employee_id=:e",
+            UpdateExpression="SET #s=:s, discrepancy_detail=:d, doc_inspection_result=:f, receiver_id=:e",
             ExpressionAttributeNames={'#s':'status'},
             ExpressionAttributeValues={':s':'INSPECTION-FAILED', ':d': detail, ':f': 'Failure', ':e': employee_id}
         )
@@ -57,7 +57,7 @@ def lambda_handler(event, context):
     now = datetime.datetime.utcnow().isoformat()
     storing_table.update_item(
         Key={'storing_order_id': sid},
-        UpdateExpression="SET #s=:s, received_date=:r, doc_inspection_result=:f, discrepancy_detail=:d, employee_id=:e",
+        UpdateExpression="SET #s=:s, received_date=:r, doc_inspection_result=:f, discrepancy_detail=:d, receiver_id=:e",
         ExpressionAttributeNames={'#s':'status'},
         ExpressionAttributeValues={':s':'RECEIVED', ':r': now, ':f': 'Success', ':d': '', ':e': employee_id}
     )
