@@ -28,7 +28,7 @@ def lambda_handler(event, context):
         return respond(404, {'message': '해당 package_id의 패키지를 찾을 수 없습니다.'})
 
     quantity = package.get('quantity')
-    rfid_ids_str = package.get('rfid_ids', '')
+    rfid_ids_str = package.get('rfid_ids', '').strip('[]')
     rfid_ids = [x for x in rfid_ids_str.split(';') if x]
     status = package.get('status')
 
