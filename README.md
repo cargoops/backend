@@ -171,6 +171,7 @@ https://t4hw5tf1ye.execute-api.us-east-2.amazonaws.com/Prod
 
 - **Path:** `/package/{package_id}`
 - **Method:** `GET`
+- **Authorization:** `Authorization` header with api_key required
 - **Parameters:**
   - `package_id` (URL path parameter)
 - **Response:**
@@ -180,7 +181,8 @@ https://t4hw5tf1ye.execute-api.us-east-2.amazonaws.com/Prod
 
 **예시 요청:**
 ```
-GET /package/PACK001
+GET /package/PACK38627
+Authorization: <api_key>
 ```
 
 **예시 응답:**
