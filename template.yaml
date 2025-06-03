@@ -13,6 +13,7 @@ Globals:
         STORING_ORDERS_TABLE: !Ref StoringOrdersTable
         PACKAGES_TABLE:       !Ref PackagesTable
         API_KEYS_TABLE:       !Ref ApiKeysTable
+        ITEMS_TABLE:          !Ref ItemsTable
 
 Resources:
 
