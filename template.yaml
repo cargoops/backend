@@ -139,6 +139,10 @@ Resources:
             Path: /bin-allocation
             Method: post
             RestApiId: !Ref Api
+            Cors:
+              AllowOrigin: "'*'"
+              AllowHeaders: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+              AllowMethods: "'OPTIONS,GET,POST,PUT'"
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref PackagesTable
@@ -177,6 +181,10 @@ Resources:
             Path: /storing-orders/receive
             Method: post
             RestApiId: !Ref Api
+            Cors:
+              AllowOrigin: "'*'"
+              AllowHeaders: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+              AllowMethods: "'OPTIONS,GET,POST,PUT'"
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref StoringOrdersTable
@@ -195,6 +203,10 @@ Resources:
             Path: /storing-orders/discrepancy
             Method: put
             RestApiId: !Ref Api
+            Cors:
+              AllowOrigin: "'*'"
+              AllowHeaders: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+              AllowMethods: "'OPTIONS,GET,POST,PUT'"
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref StoringOrdersTable
@@ -229,6 +241,10 @@ Resources:
             Path: /tq-quality-check
             Method: post
             RestApiId: !Ref Api
+            Cors:
+              AllowOrigin: "'*'"
+              AllowHeaders: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+              AllowMethods: "'OPTIONS,GET,POST,PUT'"
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref PackagesTable
