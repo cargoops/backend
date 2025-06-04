@@ -4,6 +4,7 @@ import time
 import json
 import paho.mqtt.client as mqtt
 import argparse
+import datetime
 
 IOT_ENDPOINT = "avt319l6989mq-ats.iot.us-east-2.amazonaws.com"
 PORT = 8883
