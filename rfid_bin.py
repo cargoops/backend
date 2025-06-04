@@ -3,20 +3,27 @@ import string
 import time
 import json
 import paho.mqtt.client as mqtt
+import argparse
+import datetime
 
 IOT_ENDPOINT = "avt319l6989mq-ats.iot.us-east-2.amazonaws.com"
 PORT = 8883
 CA_PATH = "connect_device_package/root-CA.crt"
 CERT_PATH = "connect_device_package/rfid-tester.cert.pem"
 KEY_PATH = "connect_device_package/rfid-tester.private.key"
-TOPIC = "rfid/scan"
+TOPIC = "rfid/tq"
+
+connected_flag = False
 
 def random_rfid():
-    return ''.join(random.choices(string.ascii_uppercase + string.digits, k=10))
+    return f"RFID{random.randint(1000, 9999)}"
 
 def on_connect(client, userdata, flags, rc):
+    global connected_flag
     print("Connected with result code", rc)
-    if rc != 0:
+    if rc == 0:
+        connected_flag = True
+    else:
         print("Connection failed! Check certs, endpoint, policy, etc.")
 
 def on_publish(client, userdata, mid):
@@ -29,6 +36,11 @@ def on_disconnect(client, userdata, rc):
     print("Disconnected with result code", rc)
 
 def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("package_id", type=str, help="패키지 ID를 입력하세요.")
+    args = parser.parse_args()
+    package_id = args.package_id
+    
     # client_id를 랜덤하게 지정 (중복 방지)
     client_id = "rfid-tester-" + ''.join(random.choices(string.ascii_lowercase + string.digits, k=6))
     client = mqtt.Client(client_id=client_id)
@@ -39,9 +51,14 @@ def main():
     client.on_disconnect = on_disconnect
     client.connect(IOT_ENDPOINT, PORT, 60)
     client.loop_start()
+
+    # 연결될 때까지 대기
+    while not connected_flag:
+        time.sleep(0.1)
+
     for _ in range(10):
         rfid = random_rfid()
-        payload = json.dumps({"rfid_id": rfid, "timestamp": int(time.time())})
+        payload = json.dumps({"rfid_id": rfid, "package_id": package_id, "tq_date": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")})
         result = client.publish(TOPIC, payload)
         print(f"Published: {payload}, result: {result.rc}")
         time.sleep(1)
