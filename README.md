@@ -44,7 +44,7 @@ https://t4hw5tf1ye.execute-api.us-east-2.amazonaws.com/Prod
 
 ### 2. Read Storing Orders
 
-- **Path:** `/read_storing_orders`
+- **Path:** `/storing-orders`
 - **Method:** `GET`
 - **Authorization:** `Authorization` header with api_key required
 - **Behavior:**
@@ -57,9 +57,9 @@ https://t4hw5tf1ye.execute-api.us-east-2.amazonaws.com/Prod
 
 ---
 
-### 3. Receive Order
+### 3. Receive
 
-- **Path:** `/receive_order`
+- **Path:** `/receive`
 - **Method:** `POST`
 - **Authorization:** `Authorization` header with api_key required (`role` must be `receiver`)
 - **Body:**
@@ -87,7 +87,7 @@ https://t4hw5tf1ye.execute-api.us-east-2.amazonaws.com/Prod
 
 ### 4. Update Discrepancy
 
-- **Path:** `/update_discrepancy`
+- **Path:** `/discrepancy`
 - **Method:** `POST`
 - **Authorization:** `Authorization` header with api_key required (`role` must be `receiver`)
 - **Body:**
