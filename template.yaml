@@ -284,6 +284,11 @@ Resources:
     Type: AWS::SQS::Queue
     Properties:
       QueueName: tq-rfid-queue
+  
+  BinRfidSqsQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: bin-rfid-queue
 
   TqRfidProducerFunction:
     Type: AWS::Serverless::Function
@@ -297,6 +302,19 @@ Resources:
       Environment:
         Variables:
           TQ_RFID_SQS_QUEUE_URL: !Ref TqRfidSqsQueue
+  
+  BinRfidProducerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: bin_rfid_producer.lambda_handler
+      Runtime: python3.9
+      CodeUri: src
+      Policies:
+        - SQSSendMessagePolicy:
+            QueueName: !GetAtt BinRfidSqsQueue.QueueName
+      Environment:
+        Variables:
+          BIN_RFID_SQS_QUEUE_URL: !Ref BinRfidSqsQueue
 
   TqRfidConsumerFunction:
     Type: AWS::Serverless::Function
@@ -314,6 +332,28 @@ Resources:
           Type: SQS
           Properties:
             Queue: !GetAtt TqRfidSqsQueue.Arn
+            BatchSize: 10
+      Environment:
+        Variables:
+          ITEMS_TABLE: !Ref ItemsTable
+          PACKAGES_TABLE: !Ref PackagesTable
+  
+  BinRfidConsumerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: bin_rfid_consumer.lambda_handler
+      Runtime: python3.9
+      CodeUri: src
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ItemsTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref PackagesTable
+      Events:
+        SQSTrigger:
+          Type: SQS
+          Properties:
+            Queue: !GetAtt BinRfidSqsQueue.Arn
             BatchSize: 10
       Environment:
         Variables:
