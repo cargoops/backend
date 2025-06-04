@@ -306,6 +306,52 @@ Resources:
             RestApiId: !Ref Api
             Auth:
               Authorizer: NONE
+  
+  BinAllocationOptionsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: options_handler.lambda_handler
+      CodeUri: src
+      Events:
+        BinAllocationOptions:
+          Type: Api
+          Properties:
+            Path: /bin-allocation
+            Method: options
+            RestApiId: !Ref Api
+            Auth:
+              Authorizer: NONE
+
+  TqQualityCheckOptionsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: options_handler.lambda_handler
+      CodeUri: src
+      Events:
+        TqQualityCheckOptions:
+          Type: Api
+          Properties:
+            Path: /tq-quality-check
+            Method: options
+            RestApiId: !Ref Api
+            Auth:
+              Authorizer: NONE
+  
+  UpdateDiscrepancyOptionsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: options_handler.lambda_handler
+      CodeUri: src
+      Events:
+        UpdateDiscrepancyOptions:
+          Type: Api
+          Properties:
+            Path: /storing-orders/discrepancy
+            Method: options
+            RestApiId: !Ref Api
+            Auth:
+              Authorizer: NONE
+
 
 Outputs:
   ApiUrl:

@@ -12,6 +12,7 @@ def lambda_handler(event, context):
         body = json.loads(event['body'])
         package_id = body['package_id']
         employee_id = body['employee_id']
+        flag = body['flag']
     except Exception:
         return respond(400, {'message': '입력값이 올바르지 않습니다.'})
 
@@ -28,10 +29,21 @@ def lambda_handler(event, context):
     now = datetime.datetime.utcnow().isoformat()
 
     # 상태 업데이트
-    packages_table.update_item(
-        Key={'package_id': package_id},
-        UpdateExpression="SET #s=:s, #t=:t, #d=:d",
-        ExpressionAttributeNames={'#s': 'status', '#t': 'tq_staff_id', '#d': 'tq_quality_check_date'},
-        ExpressionAttributeValues={':s': 'READY-FOR-RFID-ATTACH', ':t': employee_id, ':d': now}
-    )
-    return respond(200, {'message': '패키지 상태가 READY-FOR-RFID-ATTACH로 변경되었습니다.'})
+    if flag == 'pass':
+        packages_table.update_item(
+            Key={'package_id': package_id},
+            UpdateExpression="SET #s=:s, #t=:t, #d=:d",
+            ExpressionAttributeNames={'#s': 'status', '#t': 'tq_staff_id', '#d': 'tq_quality_check_date'},
+            ExpressionAttributeValues={':s': 'READY-FOR-RFID-ATTACH', ':t': employee_id, ':d': now}
+        )
+        return respond(200, {'message': '패키지 상태가 READY-FOR-RFID-ATTACH로 변경되었습니다.'})
+    elif flag == 'fail':
+        packages_table.update_item(
+            Key={'package_id': package_id},
+            UpdateExpression="SET #s=:s, #t=:t, #d=:d",
+            ExpressionAttributeNames={'#s': 'status', '#t': 'tq_staff_id', '#d': 'tq_quality_check_date'},
+            ExpressionAttributeValues={':s': 'TQ-QUALITY-CHECK-FAILED', ':t': employee_id, ':d': now}
+        )
+        return respond(200, {'message': '패키지 상태가 TQ-QUALITY-CHECK-FAILED로 변경되었습니다.'})
+    else:
+        return respond(400, {'message': 'flag는 pass 또는 fail이어야 합니다.'})
