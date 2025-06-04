@@ -466,6 +466,20 @@ Resources:
             Auth:
               Authorizer: NONE
 
+  ReceiveOrderOptionsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: options_handler.lambda_handler
+      CodeUri: src
+      Events:
+        ReceiveOrderOptions:
+          Type: Api
+          Properties:
+            Path: /storing-orders/receive
+            Method: options
+            RestApiId: !Ref Api
+            Auth:
+              Authorizer: NONE
 
 Outputs:
   ApiUrl:
