@@ -277,7 +277,7 @@ Resources:
         - DynamoDBReadPolicy:
             TableName: !Ref PackagesTable
 
-  OptionsFunction:
+  StoringOrdersOptionsFunction:
     Type: AWS::Serverless::Function
     Properties:
       Handler: options_handler.lambda_handler
@@ -291,6 +291,13 @@ Resources:
             RestApiId: !Ref Api
             Auth:
               Authorizer: NONE
+
+  PackageOptionsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: options_handler.lambda_handler
+      CodeUri: src
+      Events:
         PackageOptions:
           Type: Api
           Properties:
