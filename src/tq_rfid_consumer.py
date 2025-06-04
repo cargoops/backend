@@ -13,13 +13,15 @@ def lambda_handler(event, context):
         print(f"처리 중인 레코드: {record}")
         body = json.loads(record['body'])
         rfid_id = body['rfid_id']
-        timestamp = body.get('timestamp')
-        print(f"RFID ID: {rfid_id}, 타임스탬프: {timestamp}")
+        package_id = body['package_id']
+        tq_date = body['tq_date']
+        print(f"RFID ID: {rfid_id}, 패키지 ID: {package_id}, TQ 날짜: {tq_date}")
         
         # 필요한 추가 필드가 있다면 여기에 추가
         table.put_item(Item={
             'rfid_id': rfid_id,
-            'timestamp': timestamp
+            'package_id': package_id,
+            'tq_date': tq_date
         })
         print(f"DynamoDB에 항목이 저장되었습니다: {rfid_id}")
     

@@ -14,6 +14,8 @@ Globals:
         PACKAGES_TABLE:       !Ref PackagesTable
         API_KEYS_TABLE:       !Ref ApiKeysTable
         ITEMS_TABLE:          !Ref ItemsTable
+        BINS_TABLE:           !Ref BinsTable
+        PRODUCTS_TABLE:       !Ref ProductsTable
 
 Resources:
 
@@ -53,12 +55,32 @@ Resources:
         - AttributeName: package_id
           KeyType: HASH
       GlobalSecondaryIndexes:
-        - IndexName: StoringOrderIndex
+        - IndexName: TqEmployeeIndex
           KeySchema:
-            - AttributeName: storing_order_id
+            - AttributeName: tq_employee_id
               KeyType: HASH
           Projection:
             ProjectionType: ALL
+
+  BinsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: Bins
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: bin_id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: bin_id
+          KeyType: HASH
+
+  ProductsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: Products
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: product_id
 
   ApiKeysTable:
     Type: AWS::Serverless::SimpleTable
@@ -156,6 +178,22 @@ Resources:
         - DynamoDBReadPolicy:
             TableName: !Ref StoringOrdersTable
 
+  ReadPackagesFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: read_packages.app.lambda_handler
+      CodeUri: src
+      Events:
+        ReadPackages:
+          Type: Api
+          Properties:
+            Path: /packages
+            Method: get
+            RestApiId: !Ref Api
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref PackagesTable
+
   ReceiveOrderFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -224,28 +262,28 @@ Resources:
         - DynamoDBCrudPolicy:
             TableName: !Ref PackagesTable
 
-  RfidSqsQueue:
+  TqRfidSqsQueue:
     Type: AWS::SQS::Queue
     Properties:
-      QueueName: rfid-queue
+      QueueName: tq-rfid-queue
 
-  RfidProducerFunction:
+  TqRfidProducerFunction:
     Type: AWS::Serverless::Function
     Properties:
-      Handler: rfid_producer.lambda_handler
+      Handler: tq_rfid_producer.lambda_handler
       Runtime: python3.9
       CodeUri: src
       Policies:
         - SQSSendMessagePolicy:
-            QueueName: !GetAtt RfidSqsQueue.QueueName
+            QueueName: !GetAtt TqRfidSqsQueue.QueueName
       Environment:
         Variables:
-          SQS_QUEUE_URL: !Ref RfidSqsQueue
+          TQ_RFID_SQS_QUEUE_URL: !Ref TqRfidSqsQueue
 
-  RfidConsumerFunction:
+  TqRfidConsumerFunction:
     Type: AWS::Serverless::Function
     Properties:
-      Handler: rfid_consumer.lambda_handler
+      Handler: tq_rfid_consumer.lambda_handler
       Runtime: python3.9
       CodeUri: src
       Policies:
@@ -255,11 +293,12 @@ Resources:
         SQSTrigger:
           Type: SQS
           Properties:
-            Queue: !GetAtt RfidSqsQueue.Arn
+            Queue: !GetAtt TqRfidSqsQueue.Arn
             BatchSize: 10
       Environment:
         Variables:
           ITEMS_TABLE: !Ref ItemsTable
+          PACKAGES_TABLE: !Ref PackagesTable
 
   GetPackageFunction:
     Type: AWS::Serverless::Function
@@ -287,6 +326,21 @@ Resources:
           Type: Api
           Properties:
             Path: /storing-orders
+            Method: options
+            RestApiId: !Ref Api
+            Auth:
+              Authorizer: NONE
+  
+  PackagesOptionsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: options_handler.lambda_handler
+      CodeUri: src
+      Events:
+        PackagesOptions:
+          Type: Api
+          Properties:
+            Path: /packages
             Method: options
             RestApiId: !Ref Api
             Auth:
