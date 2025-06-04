@@ -10,7 +10,7 @@ It uses AWS Lambda, DynamoDB, and a custom API key-based authorization system.
 ## Base URL
 
 ```
-https://t4hw5tf1ye.execute-api.us-east-2.amazonaws.com/Prod
+https://ozw3p7h26e.execute-api.us-east-2.amazonaws.com/Prod
 ```
 
 ---
