@@ -90,7 +90,7 @@ https://t4hw5tf1ye.execute-api.us-east-2.amazonaws.com/Prod
 - **Path:** `/discrepancy`
 - **Method:** `POST`
 - **Authorization:** `Authorization` header with api_key required (`role` must be `receiver`)
-- **Body:**
+- **Body:**                                                                                                                                                                                                                         
   ```json
   {
     "storing_order_id": "string",
@@ -188,7 +188,7 @@ Authorization: <api_key>
 **예시 응답:**
 ```json
 {
-  "package_id": "PKG001",
+  "package_id": "PACK001",
   "name": "샘플 패키지",
   "status": "배송중"
 }
