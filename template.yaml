@@ -156,6 +156,15 @@ Resources:
         - DynamoDBReadPolicy:
             TableName: !Ref StoringOrdersTable
 
+  ReadStoringOrdersOptions:
+    Type: Api
+    Properties:
+      Path: /storing-orders
+      Method: options
+      RestApiId: !Ref Api
+      Auth:
+        Authorizer: NONE
+
   ReceiveOrderFunction:
     Type: AWS::Serverless::Function
     Properties:
