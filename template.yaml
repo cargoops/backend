@@ -291,6 +291,14 @@ Resources:
             RestApiId: !Ref Api
             Auth:
               Authorizer: NONE
+        PackageOptions:
+          Type: Api
+          Properties:
+            Path: /package/{package_id}
+            Method: options
+            RestApiId: !Ref Api
+            Auth:
+              Authorizer: NONE
 
 Outputs:
   ApiUrl:
