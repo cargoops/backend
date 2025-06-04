@@ -156,15 +156,6 @@ Resources:
         - DynamoDBReadPolicy:
             TableName: !Ref StoringOrdersTable
 
-  ReadStoringOrdersOptions:
-    Type: Api
-    Properties:
-      Path: /storing-orders
-      Method: options
-      RestApiId: !Ref Api
-      Auth:
-        Authorizer: NONE
-
   ReceiveOrderFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -285,6 +276,21 @@ Resources:
       Policies:
         - DynamoDBReadPolicy:
             TableName: !Ref PackagesTable
+
+  OptionsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: options_handler.lambda_handler
+      CodeUri: src
+      Events:
+        StoringOrdersOptions:
+          Type: Api
+          Properties:
+            Path: /storing-orders
+            Method: options
+            RestApiId: !Ref Api
+            Auth:
+              Authorizer: NONE
 
 Outputs:
   ApiUrl:
