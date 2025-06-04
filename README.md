@@ -117,17 +117,24 @@ https://t4hw5tf1ye.execute-api.us-east-2.amazonaws.com/Prod
   ```json
   {
     "package_id": "string",
-    "employee_id": "string"
+    "employee_id": "string",
+    "flag": "pass | fail"
   }
   ```
 - **Behavior:**
   - 인증 및 권한(`role == tq_employee`) 확인
-  - 해당 `package_id`의 패키지 status가 `READY-FOR-TQ`일 때만 `READY-FOR-RFID-ATTACH`로 변경
-  - tq_staff_id, tq_quality_check_date도 함께 기록
+  - 입력값으로 flag(`pass` 또는 `fail`)를 받음
+  - 해당 `package_id`의 패키지 status가 `READY-FOR-TQ`일 때만 동작
+    - flag가 `pass`이면 status를 `READY-FOR-RFID-ATTACH`로 변경
+    - flag가 `fail`이면 status를 `TQ-QUALITY-CHECK-FAILED`로 변경
+    - 두 경우 모두 tq_staff_id, tq_quality_check_date를 함께 기록
   - status가 다르거나 인증 실패 시, 적절한 에러 메시지 반환
+  - flag가 pass, fail이 아니면 에러 반환
 - **Response:**
-  - `200 OK`: 패키지 상태가 READY-FOR-RFID-ATTACH로 변경됨
-  - `400 Bad Request`: 패키지 상태가 READY-FOR-TQ가 아님 또는 입력값 오류
+  - `200 OK`: 
+    - flag가 pass: 패키지 상태가 READY-FOR-RFID-ATTACH로 변경됨
+    - flag가 fail: 패키지 상태가 TQ-QUALITY-CHECK-FAILED로 변경됨
+  - `400 Bad Request`: 패키지 상태가 READY-FOR-TQ가 아님, 입력값 오류, flag 오류
   - `403 Forbidden`: 인증/권한 오류
   - `404 Not Found`: package_id 없음
 
