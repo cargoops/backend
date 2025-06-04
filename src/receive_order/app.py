@@ -62,7 +62,7 @@ def lambda_handler(event, context):
         ExpressionAttributeValues={':s':'RECEIVED', ':r': now, ':f': 'Success', ':d': '', ':e': employee_id}
     )
     # update packages → READY-FOR-TQ
-    packages_str = order.get('packages', '[]')
+    packages_str = order.get('package_ids', '[]')
     package_ids = packages_str.strip('[]').split(';')
     for package_id in package_ids:
         if package_id:  # 빈 문자열이 아닌 경우에만 처리
