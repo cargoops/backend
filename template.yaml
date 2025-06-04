@@ -54,13 +54,6 @@ Resources:
       KeySchema:
         - AttributeName: package_id
           KeyType: HASH
-      GlobalSecondaryIndexes:
-        - IndexName: TqEmployeeIndex
-          KeySchema:
-            - AttributeName: tq_employee_id
-              KeyType: HASH
-          Projection:
-            ProjectionType: ALL
 
   BinsTable:
     Type: AWS::DynamoDB::Table
