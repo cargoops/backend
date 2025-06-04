@@ -119,7 +119,7 @@ Resources:
             FunctionArn: !GetAtt AuthorizerFunction.Arn
             Identity:
               Headers:
-                - x-api-key
+                - Authorization
       Cors:
         AllowOrigin: "'*'"
         AllowHeaders: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
