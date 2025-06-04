@@ -49,7 +49,7 @@ Resources:
       AttributeDefinitions:
         - AttributeName: package_id
           AttributeType: S
-        - AttributeName: storing_order_id
+        - AttributeName: tq_employee_id
           AttributeType: S
       KeySchema:
         - AttributeName: package_id
