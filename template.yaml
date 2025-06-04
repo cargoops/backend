@@ -164,7 +164,7 @@ Resources:
   ReadStoringOrdersOptions:
     Type: AWS::Serverless::Function
     Properties:
-      Handler: read_storing_orders.options_handler
+      Handler: read_storing_orders.app.options_handler
       CodeUri: src
       Events:
         ReadStoringOrdersOptions:
