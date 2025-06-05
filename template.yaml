@@ -195,6 +195,12 @@ Resources:
       Policies:
         - DynamoDBReadPolicy:
             TableName: !Ref StoringOrdersTable
+        - DynamoDBReadPolicy:
+            TableName: !Ref PackagesTable
+        - DynamoDBReadPolicy:
+            TableName: !Ref BinsTable
+        - DynamoDBReadPolicy:
+            TableName: !Ref ProductsTable
 
   ReadPackagesFunction:
     Type: AWS::Serverless::Function
