@@ -144,4 +144,4 @@ def lambda_handler(event, context):
         )
 
     print("=== Bin Allocation Lambda 완료 ===")
-    return respond(200, {'message': 'Bin allocation 완료', 'bin_id': bin_id, 'quantity': int(quantity)})
+    return respond(200, {'message': 'Bin allocation 완료', 'bin_allocation': bin_allocation})
