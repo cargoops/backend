@@ -44,7 +44,10 @@ def lambda_handler(event, context):
         print(f"상품을 찾을 수 없음: product_id={product_id}")
         return respond(404, {'message': '해당 product_id의 상품을 찾을 수 없습니다.'})
     
-    product_volume = product.get('volume')
+    product_volume = product.get('Item', {}).get('volume')
+    if product_volume is None:
+        print("상품 부피 정보 없음")
+        return respond(400, {'message': '상품의 volume 정보가 없습니다.'})
     total_volume = product_volume * quantity
     print(f"부피 정보: product_volume={product_volume}, total_volume={total_volume}")
 
