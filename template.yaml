@@ -179,6 +179,8 @@ Resources:
             TableName: !Ref BinsTable
         - DynamoDBCrudPolicy:
             TableName: !Ref PackagesTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ProductsTable
 
   ReadStoringOrdersFunction:
     Type: AWS::Serverless::Function
