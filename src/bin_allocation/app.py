@@ -110,6 +110,15 @@ def lambda_handler(event, context):
     now = datetime.datetime.utcnow().isoformat()
     print(f"최종 BIN 할당: {bin_allocation_str}")
 
+    # BIN별로 availability_vol 업데이트
+    for bin_id, allocated_qty in bin_allocation.items():
+        used_volume = allocated_qty * product_volume
+        bins_table.update_item(
+            Key={'bin_id': bin_id},
+            UpdateExpression="SET availability_vol = availability_vol - :used",
+            ExpressionAttributeValues={':used': used_volume}
+        )
+
     # 패키지 테이블 업데이트
     print("패키지 테이블 업데이트 중...")
     packages_table.update_item(

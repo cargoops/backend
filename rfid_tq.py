@@ -5,6 +5,7 @@ import json
 import paho.mqtt.client as mqtt
 import argparse
 import datetime
+import uuid
 
 IOT_ENDPOINT = "avt319l6989mq-ats.iot.us-east-2.amazonaws.com"
 PORT = 8883
@@ -16,7 +17,9 @@ TOPIC = "rfid/tq"
 connected_flag = False
 
 def random_rfid():
-    return f"RFID{random.randint(1000, 9999)}"
+    # UUID4를 사용하여 고유한 ID 생성 후 8자리로 축약
+    uid = str(uuid.uuid4()).replace('-', '')[:8]
+    return f"RFID{uid}"
 
 def on_connect(client, userdata, flags, rc):
     global connected_flag
