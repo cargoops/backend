@@ -8,6 +8,9 @@ storing_table   = dynamodb.Table(os.environ['STORING_ORDERS_TABLE'])
 packages_table  = dynamodb.Table(os.environ['PACKAGES_TABLE'])
 items_table     = dynamodb.Table(os.environ['ITEMS_TABLE'])
 api_keys_table  = dynamodb.Table(os.environ['API_KEYS_TABLE'])
+bins_table      = dynamodb.Table(os.environ['BINS_TABLE'])
+products_table  = dynamodb.Table(os.environ['PRODUCTS_TABLE'])
+
 print("DynamoDB resources initialized successfully")
 
 def get_api_key_record(api_key: str):

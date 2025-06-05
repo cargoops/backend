@@ -1,4 +1,8 @@
-product_id,width,height,breadth
-PROD1,10,10,10
-PROD2,10,20,10
-PROD3,10,20,20
+product_id,width,height,breadth,volume
+PROD1,10,10,10,1000
+PROD2,10,20,10,2000
+PROD3,10,20,20,4000
+PROD11,10,1.5,10,150
+PROD12,7.5,2,7.5,113
+PROD13,5,3,5,75
+PROD14,2.5,1,2.5,6
