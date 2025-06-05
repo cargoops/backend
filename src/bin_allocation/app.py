@@ -84,6 +84,7 @@ def lambda_handler(event, context):
             bin_id = bin['bin_id']
             bin_allocation = {bin_id: remaining_quantity}
             print(f"단일 BIN 할당: bin_id={bin_id}, quantity={remaining_quantity}")
+            remaining_quantity = 0
             break
     else:
         print("여러 BIN에 분배 시작")
