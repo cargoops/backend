@@ -16,6 +16,9 @@ Globals:
         ITEMS_TABLE:          !Ref ItemsTable
         BINS_TABLE:           !Ref BinsTable
         PRODUCTS_TABLE:       !Ref ProductsTable
+        INVENTORY_TABLE:      !Ref InventoryTable
+        PICK_ORDERS_TABLE:    !Ref PickOrdersTable
+        PICK_SLIPS_TABLE:     !Ref PickSlipsTable
 
 Resources:
 
@@ -40,6 +43,57 @@ Resources:
               KeyType: HASH
           Projection:
             ProjectionType: ALL
+
+  InventoryTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: Inventory
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: bin_id
+          AttributeType: S
+        - AttributeName: product_id
+          AttributeType: S
+        - AttributeName: quantity
+          AttributeType: N
+      KeySchema:
+        - AttributeName: bin_id
+          KeyType: HASH
+        - AttributeName: product_id
+          KeyType: RANGE
+      GlobalSecondaryIndexes:
+        - IndexName: ProductQuantityIndex
+          KeySchema:
+            - AttributeName: product_id
+              KeyType: HASH
+            - AttributeName: quantity
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+
+  PickOrdersTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: PickOrders
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: pick_order_id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: pick_order_id
+          KeyType: HASH
+
+  PickSlipsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: PickSlips
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: pick_slip_id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: pick_slip_id
+          KeyType: HASH
 
   PackagesTable:
     Type: AWS::DynamoDB::Table

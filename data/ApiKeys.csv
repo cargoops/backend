@@ -3,3 +3,7 @@ rcv-7fa3d1b2,RCV2054,receiver
 adm-12345678,ADMIN01,admin
 tq-4c9d8e2f,TQ3101,tq_employee
 bin-010101,BIN0401,binner
+pic-999999,PICK9999,picker
+pic-222222,PICK1235,picker
+pack-123123,PACK0123,packer
+disp-999999,DISP9999,dispatcher
