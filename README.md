@@ -203,17 +203,71 @@ Authorization: <api_key>
 
 ---
 
-## Error Handling
+### 9. Read Pick Slips
 
-All endpoints return errors in the following format:
+- **Path:** `/pick-slips`
+- **Method:** `GET`
+- **Authorization:** `Authorization` header with api_key required (`role` must be `admin`)
+- **Behavior:**
+  - Returns all pick slips.
+  - Only accessible to users with the `admin` role.
+- **Response:**
+  - `200 OK`: JSON array of all pick slips.
+  - `403 Forbidden`: Unauthorized role.
+
+**Example Request:**
+```
+GET /pick-slips
+Authorization: <api_key>
+```
+
+**Example Response:**
 ```json
-{
-  "message": "Error description"
-}
+[
+  {
+    "pick_slip_id": "PSLIP001",
+    "details": "[{'product_id': 'PROD1', 'quantity': 5}, {'product_id': 'PROD2', 'quantity': 2}]",
+    "status": "NEW"
+  }
+]
 ```
 
 ---
 
-## Contact
+### 10. Read Pick Orders
 
-For questions or support, contact your backend team.
+- **Path:** `/pick-orders`
+- **Method:** `GET`
+- **Authorization:** `Authorization` header with api_key required (`role` must be `admin`)
+- **Behavior:**
+  - Returns all pick orders.
+  - Only accessible to users with the `admin` role.
+- **Response:**
+  - `200 OK`: JSON array of all pick orders.
+  - `403 Forbidden`: Unauthorized role.
+
+**Example Request:**
+```
+GET /pick-orders
+Authorization: <api_key>
+```
+
+**Example Response:**
+```json
+[
+  {
+    "pick_order_id": "PORD001",
+    "pick_slip_id": "PSLIP001",
+    "product_id": "PROD1",
+    "quantity": 5,
+    "status": "PENDING"
+  }
+]
+```
+
+---
+
+## Error Handling
+
+All endpoints return errors in the following format:
+```

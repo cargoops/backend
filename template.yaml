@@ -543,6 +543,68 @@ Resources:
             Auth:
               Authorizer: NONE
 
+  ReadPickSlipsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: read_pick_slips.app.lambda_handler
+      CodeUri: src
+      Events:
+        ReadPickSlips:
+          Type: Api
+          Properties:
+            Path: /pick-slips
+            Method: get
+            RestApiId: !Ref Api
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref PickSlipsTable
+
+  ReadPickOrdersFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: read_pick_orders.app.lambda_handler
+      CodeUri: src
+      Events:
+        ReadPickOrders:
+          Type: Api
+          Properties:
+            Path: /pick-orders
+            Method: get
+            RestApiId: !Ref Api
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref PickOrdersTable
+
+  PickSlipsOptionsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: options_handler.lambda_handler
+      CodeUri: src
+      Events:
+        PickSlipsOptions:
+          Type: Api
+          Properties:
+            Path: /pick-slips
+            Method: options
+            RestApiId: !Ref Api
+            Auth:
+              Authorizer: NONE
+
+  PickOrdersOptionsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: options_handler.lambda_handler
+      CodeUri: src
+      Events:
+        PickOrdersOptions:
+          Type: Api
+          Properties:
+            Path: /pick-orders
+            Method: options
+            RestApiId: !Ref Api
+            Auth:
+              Authorizer: NONE
+
 Outputs:
   ApiUrl:
     Description: "Invoke URL"
