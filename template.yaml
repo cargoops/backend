@@ -19,6 +19,7 @@ Globals:
         INVENTORY_TABLE:      !Ref InventoryTable
         PICK_ORDERS_TABLE:    !Ref PickOrdersTable
         PICK_SLIPS_TABLE:     !Ref PickSlipsTable
+        PICK_TASKS_TABLE:     !Ref PickTasksTable
 
 Resources:
 
@@ -93,6 +94,18 @@ Resources:
           AttributeType: S
       KeySchema:
         - AttributeName: pick_slip_id
+          KeyType: HASH
+
+  PickTasksTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: PickTasks
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: pick_task_id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: pick_task_id
           KeyType: HASH
 
   PackagesTable:
