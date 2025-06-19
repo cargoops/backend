@@ -1,34 +1,55 @@
 import json, datetime
 from common.utils import packages_table, respond
+from boto3.dynamodb.conditions import Attr
 
 def lambda_handler(event, context):
-    # 인증 및 권한 체크
+    # Authentication and Authorization Check
     auth = event['requestContext'].get('authorizer', {})
     if auth.get('role') != 'tq_employee':
-        return respond(403, {'message': '권한이 없습니다. (role != tq_employee)'})
+        return respond(403, {'message': 'Unauthorized. (role != tq_employee)'})
 
-    # 인풋 파싱
+    # Change all records with status TQ-CHECKING to TQ-FAILED
+    scan_kwargs = {
+        'FilterExpression': Attr('status').eq('TQ-CHECKING')
+    }
+    done = False
+    start_key = None
+    while not done:
+        if start_key:
+            scan_kwargs['ExclusiveStartKey'] = start_key
+        response = packages_table.scan(**scan_kwargs)
+        for item in response.get('Items', []):
+            packages_table.update_item(
+                Key={'package_id': item['package_id']},
+                UpdateExpression="SET #s=:s",
+                ExpressionAttributeNames={'#s': 'status'},
+                ExpressionAttributeValues={':s': 'TQ-FAILED'}
+            )
+        start_key = response.get('LastEvaluatedKey', None)
+        done = start_key is None
+
+    # Parse Input
     try:
         body = json.loads(event['body'])
         package_id = body['package_id']
         employee_id = body['employee_id']
         flag = body['flag']
     except Exception:
-        return respond(400, {'message': '입력값이 올바르지 않습니다.'})
+        return respond(400, {'message': 'Invalid input values.'})
 
-    # 패키지 레코드 조회
+    # Retrieve Package Record
     r = packages_table.get_item(Key={'package_id': package_id})
     package = r.get('Item')
     if not package:
-        return respond(404, {'message': '해당 package_id의 패키지를 찾을 수 없습니다.'})
+        return respond(404, {'message': 'Package with this package_id not found.'})
 
-    # 상태 확인 및 변경
+    # Status Check and Change
     if package.get('status') != 'READY-FOR-TQ':
-        return respond(400, {'message': f"패키지 상태가 READY-FOR-TQ가 아닙니다. (현재 상태: {package.get('status')})"})
+        return respond(400, {'message': f"Package status is not READY-FOR-TQ. (Current status: {package.get('status')})"})
 
     now = datetime.datetime.utcnow().isoformat()
 
-    # 상태 업데이트
+    # Status Update
     if flag == 'pass':
         packages_table.update_item(
             Key={'package_id': package_id},
@@ -36,7 +57,7 @@ def lambda_handler(event, context):
             ExpressionAttributeNames={'#s': 'status', '#t': 'tq_staff_id', '#d': 'tq_quality_check_date'},
             ExpressionAttributeValues={':s': 'READY-FOR-RFID-ATTACH', ':t': employee_id, ':d': now}
         )
-        return respond(200, {'message': '패키지 상태가 READY-FOR-RFID-ATTACH로 변경되었습니다.'})
+        return respond(200, {'message': 'Package status changed to READY-FOR-RFID-ATTACH.'})
     elif flag == 'fail':
         packages_table.update_item(
             Key={'package_id': package_id},
@@ -44,6 +65,6 @@ def lambda_handler(event, context):
             ExpressionAttributeNames={'#s': 'status', '#t': 'tq_staff_id', '#d': 'tq_quality_check_date'},
             ExpressionAttributeValues={':s': 'TQ-QUALITY-CHECK-FAILED', ':t': employee_id, ':d': now}
         )
-        return respond(200, {'message': '패키지 상태가 TQ-QUALITY-CHECK-FAILED로 변경되었습니다.'})
+        return respond(200, {'message': 'Package status changed to TQ-QUALITY-CHECK-FAILED.'})
     else:
-        return respond(400, {'message': 'flag는 pass 또는 fail이어야 합니다.'})
+        return respond(400, {'message': 'Flag must be either pass or fail.'})

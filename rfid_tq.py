@@ -16,7 +16,7 @@ TOPIC = "rfid/tq"
 
 connected_flag = False
 
-def random_rfid():
+def get_rfid():
     # UUID4를 사용하여 고유한 ID 생성 후 8자리로 축약
     uid = str(uuid.uuid4()).replace('-', '')[:8]
     return f"RFID{uid}"
@@ -62,7 +62,7 @@ def main():
         time.sleep(0.1)
 
     for _ in range(quantity):
-        rfid = random_rfid()
+        rfid = get_rfid()
         payload = json.dumps({"rfid_id": rfid, "package_id": package_id, "tq_date": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")})
         result = client.publish(TOPIC, payload)
         print(f"Published: {payload}, result: {result.rc}")
