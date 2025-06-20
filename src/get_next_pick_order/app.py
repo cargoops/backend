@@ -43,12 +43,9 @@ def lambda_handler(event, context):
                 'body': json.dumps({'message': f"Forbidden: Role '{role}' is not authorized."})
             }
 
-        response = table.query(
-            IndexName=GSI_NAME,
-            KeyConditionExpression=Key('picker_id').eq(employee_id),
-            FilterExpression=Key('pick_order_status').eq('READY-FOR-PICKING'),
-            ScanIndexForward=True,
-            Limit=1
+        # Use scan for testing purposes
+        response = table.scan(
+            FilterExpression=boto3.dynamodb.conditions.Attr('picker_id').eq(employee_id) & boto3.dynamodb.conditions.Attr('pick_order_status').eq('READY-FOR-PICKING')
         )
 
         items = response.get('Items', [])
@@ -64,6 +61,11 @@ def lambda_handler(event, context):
                 'body': json.dumps({'message': 'No pick orders are currently ready for picking.'})
             }
 
+        # Sort by order_created_date to find the oldest one
+        items.sort(key=lambda x: x['order_created_date'])
+        
+        oldest_item = items[0]
+
         return {
             'statusCode': 200,
             'headers': {
@@ -71,7 +73,7 @@ def lambda_handler(event, context):
                 'Access-Control-Allow-Headers': 'Content-Type',
                 'Access-Control-Allow-Methods': 'OPTIONS,GET'
             },
-            'body': json.dumps(items[0], cls=DecimalEncoder)
+            'body': json.dumps(oldest_item, cls=DecimalEncoder)
         }
 
     except Exception as e:
