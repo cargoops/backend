@@ -115,9 +115,6 @@ Resources:
       KeySchema:
         - AttributeName: pick_slip_id
           KeyType: HASH
-      Policies:
-        - DynamoDBReadPolicy:
-            TableName: !Ref PickOrdersTable
 
   PackagesTable:
     Type: AWS::DynamoDB::Table
