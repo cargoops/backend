@@ -310,6 +310,46 @@ Authorization: <api_key_with_picker_role>
 
 ---
 
+### 12. Close Pick Order
+
+- **Path:** `/pick-orders/{pick_order_id}/close`
+- **Method:** `POST`
+- **Authorization:** `Authorization` header with api_key required (`role` must be `picker`)
+- **Behavior:**
+  - Authenticates and authorizes the user, checking if the `role` is `picker` and if the picker is assigned to the specified `pick_order_id`.
+  - Validates that the pick order's status is `READY-FOR-PICKING`.
+  - Updates the pick order's status to `CLOSE` and records the `picked_date` as the current timestamp.
+  - After closing, it checks all other pick orders associated with the same `pick_slip_id`.
+  - If all related pick orders are `CLOSE`, it updates the corresponding `PickSlips` table record's status to `READY-FOR-PACKING` and records the `packing_start_date`.
+- **Response:**
+  - `200 OK`: Confirmation message. If the pick slip was updated, it will be noted in the response.
+  - `400 Bad Request`: Invalid status or missing parameters.
+  - `403 Forbidden`: Unauthorized role or not assigned to the order.
+  - `404 Not Found`: Pick order not found.
+
+**Example Request:**
+```
+POST /pick-orders/PO0006/close
+Authorization: <api_key_for_PICK9999>
+```
+
+**Example Response (Success, Pick Slip Not Updated):**
+```json
+{
+    "message": "Pick order closed successfully."
+}
+```
+
+**Example Response (Success, Pick Slip Updated):**
+```json
+{
+    "message": "Pick order closed successfully.",
+    "pick_slip_status": "READY-FOR-PACKING"
+}
+```
+
+---
+
 ## Error Handling
 
 All endpoints return errors in the following format:

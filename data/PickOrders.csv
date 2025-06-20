@@ -4,5 +4,5 @@ PO0002,PS0002,RACK_B,"{'bin_id': 'BIN7', 'product_id': 'PROD3', 'quantity': 1}",
 PO0003,PS0002,RACK_B,"{'bin_id': 'BIN6', 'product_id': 'PROD9', 'quantity': 2}",PICK1235,2025-06-02,CLOSE,2025-06-10
 PO0004,PS0003,RACK_A,"{'bin_id': 'BIN1', 'product_id': 'PROD7', 'quantity': 3}",PICK9999,2025-06-03,CLOSE,2025-06-11
 PO0005,PS0004,RACK_B,"{'bin_id': 'BIN1', 'product_id': 'PROD7', 'quantity': 3}",PICK1235,2025-06-04,CLOSE,2025-06-12
-PO0006,PS0005,RACK_A,"[{'bin_id': 'BIN1', 'product_id': 'PROD13', 'quantity': 2}, {'bin_id': 'BIN2', 'product_Id': 'PROD14', 'quantity': 3}]",PICK9999,2025-06-20,READY-FOR-PICKING,
+PO0006,PS0005,RACK_A,"[{'bin_id': 'BIN1', 'product_id': 'PROD13', 'quantity': 2}, {'bin_id': 'BIN2', 'product_id': 'PROD14', 'quantity': 3}]",PICK9999,2025-06-20,READY-FOR-PICKING,
 PO0007,PS0005,RACK_B,"[{'bin_id': 'BIN8', 'product_id': 'PROD09', 'quantity': 2}]",PICK1235,2025-06-20,READY-FOR-PICKING,

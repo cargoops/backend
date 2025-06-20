@@ -83,6 +83,8 @@ Resources:
           AttributeType: S
         - AttributeName: order_created_date
           AttributeType: S
+        - AttributeName: pick_slip_id
+          AttributeType: S
       KeySchema:
         - AttributeName: pick_order_id
           KeyType: HASH
@@ -93,6 +95,12 @@ Resources:
               KeyType: HASH
             - AttributeName: order_created_date
               KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+        - IndexName: PickSlipIdIndex
+          KeySchema:
+            - AttributeName: pick_slip_id
+              KeyType: HASH
           Projection:
             ProjectionType: ALL
 
@@ -107,6 +115,9 @@ Resources:
       KeySchema:
         - AttributeName: pick_slip_id
           KeyType: HASH
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref PickOrdersTable
 
   PackagesTable:
     Type: AWS::DynamoDB::Table
@@ -644,6 +655,39 @@ Resources:
           Type: Api
           Properties:
             Path: /next-pick-order
+            Method: options
+            RestApiId: !Ref Api
+            Auth:
+              Authorizer: NONE
+
+  ClosePickOrderFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: close_pick_order.app.lambda_handler
+      CodeUri: src
+      Events:
+        ClosePickOrder:
+          Type: Api
+          Properties:
+            Path: /pick-orders/{pick_order_id}/close
+            Method: post
+            RestApiId: !Ref Api
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref PickOrdersTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref PickSlipsTable
+
+  ClosePickOrderOptionsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: options_handler.lambda_handler
+      CodeUri: src
+      Events:
+        ClosePickOrderOptions:
+          Type: Api
+          Properties:
+            Path: /pick-orders/{pick_order_id}/close
             Method: options
             RestApiId: !Ref Api
             Auth:
