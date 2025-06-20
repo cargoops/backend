@@ -63,9 +63,9 @@ def lambda_handler(event, context):
         pick_slip_id = updated_order.get('pick_slip_id')
 
         # 3. Check if all orders for the same pick slip are closed
-        related_orders_response = pick_orders_table.query(
-            IndexName=GSI_NAME,
-            KeyConditionExpression=boto3.dynamodb.conditions.Key('pick_slip_id').eq(pick_slip_id)
+        # Use scan for simplicity and to ensure data consistency after update
+        related_orders_response = pick_orders_table.scan(
+            FilterExpression=boto3.dynamodb.conditions.Attr('pick_slip_id').eq(pick_slip_id)
         )
         related_orders = related_orders_response.get('Items', [])
         
