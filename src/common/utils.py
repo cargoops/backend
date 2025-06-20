@@ -15,7 +15,7 @@ print("DynamoDB resources initialized successfully")
 
 def get_api_key_record(api_key: str):
     print(f"Fetching API key record for key: {api_key}")
-    resp = api_keys_table.get_item(Key={'api_key': api_key})
+    resp = api_keys_table.get_item(Key={'api_key': api_key}, ConsistentRead=True)
     return resp.get('Item')
 
 def respond(status_code: int, body: dict):
