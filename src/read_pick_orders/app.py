@@ -7,9 +7,9 @@ table_name = os.environ['PICK_ORDERS_TABLE']
 table = dynamodb.Table(table_name)
 
 def lambda_handler(event, context):
-    # Extract claims from the authorizer context
-    claims = event.get('requestContext', {}).get('authorizer', {}).get('claims', {})
-    role = claims.get('custom:role')
+    # Extract role from the authorizer context
+    authorizer_context = event.get('requestContext', {}).get('authorizer', {})
+    role = authorizer_context.get('role')
 
     # Check if the user role is admin
     if role != 'admin':
