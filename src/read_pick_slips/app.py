@@ -7,6 +7,7 @@ table_name = os.environ['PICK_SLIPS_TABLE']
 table = dynamodb.Table(table_name)
 
 def lambda_handler(event, context):
+    print(json.dumps(event))
     # Extract role from the authorizer context
     authorizer_context = event.get('requestContext', {}).get('authorizer', {})
     role = authorizer_context.get('role')
