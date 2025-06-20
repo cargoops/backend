@@ -1,6 +1,17 @@
 import json
 import boto3
 import os
+import decimal
+
+# Helper class to convert a DynamoDB item to JSON.
+class DecimalEncoder(json.JSONEncoder):
+    def default(self, o):
+        if isinstance(o, decimal.Decimal):
+            if o % 1 > 0:
+                return float(o)
+            else:
+                return int(o)
+        return super(DecimalEncoder, self).default(o)
 
 dynamodb = boto3.resource('dynamodb')
 table_name = os.environ['PICK_ORDERS_TABLE']
@@ -40,7 +51,7 @@ def lambda_handler(event, context):
                 'Access-Control-Allow-Headers': 'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token',
                 'Access-Control-Allow-Methods': 'OPTIONS,GET'
             },
-            'body': json.dumps(items)
+            'body': json.dumps(items, cls=DecimalEncoder)
         }
     except Exception as e:
         print(e)
