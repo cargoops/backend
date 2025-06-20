@@ -57,9 +57,9 @@ https://ozw3p7h26e.execute-api.us-east-2.amazonaws.com/Prod
 
 ---
 
-### 3. Receive
+### 3. Receive Order
 
-- **Path:** `/receive`
+- **Path:** `/storing-orders/receive`
 - **Method:** `POST`
 - **Authorization:** `Authorization` header with api_key required (`role` must be `receiver`)
 - **Body:**
@@ -87,8 +87,8 @@ https://ozw3p7h26e.execute-api.us-east-2.amazonaws.com/Prod
 
 ### 4. Update Discrepancy
 
-- **Path:** `/discrepancy`
-- **Method:** `POST`
+- **Path:** `/storing-orders/discrepancy`
+- **Method:** `PUT`
 - **Authorization:** `Authorization` header with api_key required (`role` must be `receiver`)
 - **Body:**                                                                                                                                                                                                                         
   ```json
@@ -263,6 +263,49 @@ Authorization: <api_key>
     "status": "PENDING"
   }
 ]
+```
+
+---
+
+### 11. Get Next Pick Order
+
+- **Path:** `/next-pick-order`
+- **Method:** `GET`
+- **Authorization:** `Authorization` header with api_key required (`role` must be `picker`)
+- **Behavior:**
+  - Authenticates and authorizes the user, checking if the `role` is `picker`.
+  - Finds all pick orders assigned to the picker (`employee_id` from context) with `pick_order_status` as `READY-FOR-PICKING`.
+  - Returns the one with the earliest `order_created_date`.
+- **Response:**
+  - `200 OK`: The next pick order object (JSON).
+  - `403 Forbidden`: Unauthorized role.
+  - `404 Not Found`: No pick orders are ready for picking.
+
+**Example Request:**
+```
+GET /next-pick-order
+Authorization: <api_key_with_picker_role>
+```
+
+**Example Response (Success):**
+```json
+{
+    "pick_order_id": "PO0006",
+    "pick_slip_id": "PS0005",
+    "picking_zone": "RACK_A",
+    "pick_task": "[{'bin_id': 'BIN1', 'product_id': 'PROD13', 'quantity': 2}, {'bin_id': 'BIN2', 'product_Id': 'PROD14', 'quantity': 3}]",
+    "picker_id": "PICK9999",
+    "order_created_date": "2025-06-20",
+    "pick_order_status": "READY-FOR-PICKING",
+    "picked_date": ""
+}
+```
+
+**Example Response (Not Found):**
+```json
+{
+    "message": "No pick orders are currently ready for picking."
+}
 ```
 
 ---

@@ -79,9 +79,22 @@ Resources:
       AttributeDefinitions:
         - AttributeName: pick_order_id
           AttributeType: S
+        - AttributeName: picker_id
+          AttributeType: S
+        - AttributeName: order_created_date
+          AttributeType: S
       KeySchema:
         - AttributeName: pick_order_id
           KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: PickerStatusDateIndex
+          KeySchema:
+            - AttributeName: picker_id
+              KeyType: HASH
+            - AttributeName: order_created_date
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
 
   PickSlipsTable:
     Type: AWS::DynamoDB::Table
@@ -575,6 +588,22 @@ Resources:
         - DynamoDBReadPolicy:
             TableName: !Ref PickOrdersTable
 
+  GetNextPickOrderFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: get_next_pick_order.app.lambda_handler
+      CodeUri: src
+      Events:
+        GetNextPickOrder:
+          Type: Api
+          Properties:
+            Path: /next-pick-order
+            Method: get
+            RestApiId: !Ref Api
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref PickOrdersTable
+
   PickSlipsOptionsFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -600,6 +629,21 @@ Resources:
           Type: Api
           Properties:
             Path: /pick-orders
+            Method: options
+            RestApiId: !Ref Api
+            Auth:
+              Authorizer: NONE
+
+  GetNextPickOrderOptionsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: options_handler.lambda_handler
+      CodeUri: src
+      Events:
+        GetNextPickOrderOptions:
+          Type: Api
+          Properties:
+            Path: /next-pick-order
             Method: options
             RestApiId: !Ref Api
             Auth:

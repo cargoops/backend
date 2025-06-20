@@ -1,8 +1,8 @@
 ﻿pick_order_id,pick_slip_id,picking_zone,pick_task,picker_id,order_created_date,pick_order_status,picked_date
-PO0001,PS0001,RACK_A,"{'bin_id': 'BIN4', 'product_id': 'PROD2', 'quantity': 2}",PICK9999,2025-06-01,CLOSE,2025.6.4
-PO0002,PS0002,RACK_B,"{'bin_id': 'BIN7', 'product_id': 'PROD3', 'quantity': 1}",PICK1235,2025-06-02,CLOSE,2025.6.9
-PO0003,PS0002,RACK_B,"{'bin_id': 'BIN6', 'product_id': 'PROD9', 'quantity': 2}",PICK1235,2025-06-02,CLOSE,2025.6.10
-PO0004,PS0003,RACK_A,"{'bin_id': 'BIN1', 'product_id': 'PROD7', 'quantity': 3}",PICK9999,2025-06-03,CLOSE,2025.6.11
-PO0005,PS0004,RACK_B,"{'bin_id': 'BIN1', 'product_id': 'PROD7', 'quantity': 3}",PICK1235,2025-06-04,CLOSE,2025.6.12
-PO0006,PS0005,RACK_A,"[{'bin_id': BIN1, 'product_id': 'PROD13', 'quantity': 2}, {'bin_id': BIN2, 'product_Id': 'PROD14', 'quantity': 3}]",PICK9999,2025.6.12,READY-FOR-PICKING,
-PO0007,PS0005,RACK_B,"[{'bin_id': BIN8, 'product_id': 'PROD09', 'quantity': 2}]",PICK1235,2025.6.12,READY-FOR-PICKING,
+PO0001,PS0001,RACK_A,"{'bin_id': 'BIN4', 'product_id': 'PROD2', 'quantity': 2}",PICK9999,2025-06-01,CLOSE,2025-06-04
+PO0002,PS0002,RACK_B,"{'bin_id': 'BIN7', 'product_id': 'PROD3', 'quantity': 1}",PICK1235,2025-06-02,CLOSE,2025-06-09
+PO0003,PS0002,RACK_B,"{'bin_id': 'BIN6', 'product_id': 'PROD9', 'quantity': 2}",PICK1235,2025-06-02,CLOSE,2025-06-10
+PO0004,PS0003,RACK_A,"{'bin_id': 'BIN1', 'product_id': 'PROD7', 'quantity': 3}",PICK9999,2025-06-03,CLOSE,2025-06-11
+PO0005,PS0004,RACK_B,"{'bin_id': 'BIN1', 'product_id': 'PROD7', 'quantity': 3}",PICK1235,2025-06-04,CLOSE,2025-06-12
+PO0006,PS0005,RACK_A,"[{'bin_id': 'BIN1', 'product_id': 'PROD13', 'quantity': 2}, {'bin_id': 'BIN2', 'product_Id': 'PROD14', 'quantity': 3}]",PICK9999,2025-06-20,READY-FOR-PICKING,
+PO0007,PS0005,RACK_B,"[{'bin_id': 'BIN8', 'product_id': 'PROD09', 'quantity': 2}]",PICK1235,2025-06-20,READY-FOR-PICKING,
