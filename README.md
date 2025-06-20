@@ -31,7 +31,7 @@ https://ozw3p7h26e.execute-api.us-east-2.amazonaws.com/Prod
 
 ### 1. Get API Key Record
 
-- **Path:** `/get_api_key_record`
+- **Path:** `/api-key`
 - **Method:** `POST` or `GET`
 - **Parameters:**  
   - `api_key` (in query string or JSON body)
