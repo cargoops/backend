@@ -52,13 +52,13 @@ def lambda_handler(event, context):
                 'body': json.dumps({'message': 'Not Found: Pick slip not found.'})
             }
 
-        print(f"Pick slip {pick_slip_id} found, updating status to READY-FOR-DISPATCH")
+        print(f"Pick slip {pick_slip_id} found, updating status to READY-FOR-DISPATCH and removing packing_zone")
 
-        # Update the slip status to READY-FOR-DISPATCH
+        # Update the slip status to READY-FOR-DISPATCH and remove packing_zone
         timestamp = datetime.now().isoformat()
         update_response = pick_slips_table.update_item(
             Key={'pick_slip_id': pick_slip_id},
-            UpdateExpression="SET pick_slip_status = :status, packed_date = :date",
+            UpdateExpression="SET pick_slip_status = :status, packed_date = :date REMOVE packing_zone",
             ExpressionAttributeValues={
                 ':status': 'READY-FOR-DISPATCH',
                 ':date': timestamp
@@ -66,7 +66,7 @@ def lambda_handler(event, context):
             ReturnValues="ALL_NEW"
         )
 
-        print(f"Successfully updated pick slip {pick_slip_id} - Status: READY-FOR-DISPATCH, Packed date: {timestamp}")
+        print(f"Successfully updated pick slip {pick_slip_id} - Status: READY-FOR-DISPATCH, Packed date: {timestamp}, packing_zone removed")
         
         return {
             'statusCode': 200,
