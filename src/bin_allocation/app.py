@@ -16,11 +16,14 @@ def lambda_handler(event, context):
         print(f"Authorization Error: role={auth.get('role')}")
         return respond(403, {'message': 'Unauthorized. (role != binner)'})
 
+    employee_id = auth.get('employee_id')
+    if not employee_id:
+        return respond(403, {'message': 'Unauthorized. (employee_id not found in token)'})
+
     # 2. Parse Input Values
     try:
         body = json.loads(event['body'])
         package_id = body['package_id']
-        employee_id = body['employee_id']
         print(f"Input Values: package_id={package_id}, employee_id={employee_id}")
     except Exception as e:
         print(f"Input Parsing Error: {str(e)}")

@@ -148,12 +148,11 @@ https://ozw3p7h26e.execute-api.us-east-2.amazonaws.com/Prod
 - **Body:**
   ```json
   {
-    "package_id": "string",
-    "employee_id": "string"
+    "package_id": "string"
   }
   ```
 - **Behavior:**
-  - 인증 및 권한(`role == binner`) 확인
+  - 인증 및 권한(`role == binner`) 확인. `employee_id`는 인증 토큰에서 자동으로 추출됩니다.
   - 해당 `package_id`의 패키지 status가 `READY-FOR-BIN-ALLOCATION`일 때만 동작
   - quantity가 50 이상이면 공간 부족 에러 반환
   - 그렇지 않으면 1~5 중 랜덤 BIN 할당, bin_allocation, binner_id, bin_allocation_date, status(`READY-FOR-BINNING`) 업데이트
