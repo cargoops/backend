@@ -690,6 +690,37 @@ Resources:
             Auth:
               Authorizer: NONE
 
+  StartPackingFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: start_packing.app.lambda_handler
+      CodeUri: src
+      Events:
+        StartPacking:
+          Type: Api
+          Properties:
+            Path: /packing/start
+            Method: post
+            RestApiId: !Ref Api
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref PickSlipsTable
+
+  StartPackingOptionsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: options_handler.lambda_handler
+      CodeUri: src
+      Events:
+        StartPackingOptions:
+          Type: Api
+          Properties:
+            Path: /packing/start
+            Method: options
+            RestApiId: !Ref Api
+            Auth:
+              Authorizer: NONE
+
 Outputs:
   ApiUrl:
     Description: "Invoke URL"

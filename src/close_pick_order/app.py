@@ -77,7 +77,7 @@ def lambda_handler(event, context):
         if all_closed and related_orders:
             pick_slips_table.update_item(
                 Key={'pick_slip_id': pick_slip_id},
-                UpdateExpression="SET pick_slip_status = :status, packing_start_date = :date",
+                UpdateExpression="SET pick_slip_status = :status, ready_for_packing_date = :date",
                 ExpressionAttributeValues={':status': 'READY-FOR-PACKING', ':date': timestamp}
             )
             response_message['pick_slip_status'] = 'READY-FOR-PACKING'

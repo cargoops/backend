@@ -350,6 +350,54 @@ Authorization: <api_key_for_PICK9999>
 
 ---
 
+### 13. Start Packing
+
+- **Path:** `/packing/start`
+- **Method:** `POST`
+- **Authorization:** `Authorization` header with api_key required (`role` must be `packer`)
+- **Body:**
+  ```json
+  {
+    "packing_zone": "string"
+  }
+  ```
+- **Behavior:**
+  - Authenticates and authorizes the user, checking if the `role` is `packer`.
+  - Scans for pick slips that are in the specified `packing_zone` and have a `pick_slip_status` of `READY-FOR-PACKING`.
+  - If multiple slips are found, it selects the one with the earliest `pick_slip_created_date`.
+  - It updates the selected pick slip's status to `PACKING-IN-PROGRESS`, sets the `packing_start_date` to the current time, and assigns the `packer_id`.
+  - Returns the full, updated pick slip record.
+- **Response:**
+  - `200 OK`: The updated pick slip object (JSON).
+  - `400 Bad Request`: Missing `packing_zone` in the request body.
+  - `403 Forbidden`: Unauthorized role.
+  - `404 Not Found`: No pick slips are ready for packing in the specified zone.
+
+**Example Request:**
+```
+POST /packing/start
+Authorization: <api_key_with_packer_role>
+Content-Type: application/json
+
+{
+    "packing_zone": "ZONE-A"
+}
+```
+
+**Example Response (Success):**
+```json
+{
+    "pick_slip_id": "PS0005",
+    "packing_zone": "ZONE-A",
+    "pick_slip_status": "PACKING-IN-PROGRESS",
+    "packer_id": "packer-007",
+    "pick_slip_created_date": "2025-06-20",
+    "packing_start_date": "2025-06-21T10:00:00.123456"
+}
+```
+
+---
+
 ## Error Handling
 
 All endpoints return errors in the following format:
