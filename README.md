@@ -122,21 +122,20 @@ https://ozw3p7h26e.execute-api.us-east-2.amazonaws.com/Prod
   }
   ```
 - **Behavior:**
-  - 인증 및 권한(`role == tq_employee`) 확인
-  - 입력값으로 flag(`pass` 또는 `fail`)를 받음
-  - 해당 `package_id`의 패키지 status가 `READY-FOR-TQ`일 때만 동작
-    - flag가 `pass`이면 status를 `READY-FOR-RFID-ATTACH`로 변경
-    - flag가 `fail`이면 status를 `TQ-QUALITY-CHECK-FAILED`로 변경
-    - 두 경우 모두 tq_staff_id, tq_quality_check_date를 함께 기록
-  - status가 다르거나 인증 실패 시, 적절한 에러 메시지 반환
-  - flag가 pass, fail이 아니면 에러 반환
+  - Checks authentication and authorization (`role` must be `tq_employee`).
+  - Accepts a `flag` (`pass` or `fail`) in the request body.
+  - Operates only if the package status for the given `package_id` is `READY-FOR-TQ`.
+    - If `flag` is `pass`, the status is updated to `READY-FOR-RFID-ATTACH`.
+    - If `flag` is `fail`, the status is updated to `TQ-QUALITY-CHECK-FAILED`.
+    - In both cases, `tq_staff_id` and `tq_quality_check_date` are recorded.
+  - Returns an error if the status is not `READY-FOR-TQ`, if authentication fails, or if the `flag` is invalid.
 - **Response:**
-  - `200 OK`: 
-    - flag가 pass: 패키지 상태가 READY-FOR-RFID-ATTACH로 변경됨
-    - flag가 fail: 패키지 상태가 TQ-QUALITY-CHECK-FAILED로 변경됨
-  - `400 Bad Request`: 패키지 상태가 READY-FOR-TQ가 아님, 입력값 오류, flag 오류
-  - `403 Forbidden`: 인증/권한 오류
-  - `404 Not Found`: package_id 없음
+  - `200 OK`:
+    - If `flag` is `pass`: Package status is changed to `READY-FOR-RFID-ATTACH`.
+    - If `flag` is `fail`: Package status is changed to `TQ-QUALITY-CHECK-FAILED`.
+  - `400 Bad Request`: If package status is not `READY-FOR-TQ`, there are input errors, or the flag is invalid.
+  - `403 Forbidden`: Authentication/Authorization error.
+  - `404 Not Found`: If `package_id` does not exist.
 
 ---
 
@@ -152,16 +151,20 @@ https://ozw3p7h26e.execute-api.us-east-2.amazonaws.com/Prod
   }
   ```
 - **Behavior:**
-  - 인증 및 권한(`role == binner`) 확인. `employee_id`는 인증 토큰에서 자동으로 추출됩니다.
-  - 해당 `package_id`의 패키지 status가 `READY-FOR-BIN-ALLOCATION`일 때만 동작
-  - quantity가 50 이상이면 공간 부족 에러 반환
-  - 그렇지 않으면 1~5 중 랜덤 BIN 할당, bin_allocation, binner_id, bin_allocation_date, status(`READY-FOR-BINNING`) 업데이트
-  - rfid_ids(세미콜론 구분 리스트) 내 각 RFID에 대해 Items 테이블의 status를 `READY-FOR-BINNING`으로 변경
+  - Authenticates and authorizes the user, ensuring the `role` is `binner`. The `employee_id` is extracted from the authentication token.
+  - Retrieves the package using `package_id` and checks if its status is `READY-FOR-BIN-ALLOCATION`.
+  - Fetches the product's volume and calculates the total volume required for the package quantity.
+  - Scans available bins and sorts them by `availability_vol` (available volume) in descending order.
+  - It first attempts to place the entire package into a single bin that has enough available volume.
+  - If no single bin is large enough, it distributes the items across multiple bins based on available space.
+  - Updates the `availability_vol` in the `bins` table for each bin used.
+  - Updates the package status to `READY-FOR-BINNING`, and records the `bin_allocation` (a map of bin IDs to quantities), `binner_id`, and `bin_allocation_date`.
+  - Updates the status of all associated RFIDs in the `items` table to `READY-FOR-BINNING`.
 - **Response:**
-  - `200 OK`: Bin allocation 완료, bin_id, quantity 반환
-  - `400 Bad Request`: 패키지 상태/quantity 오류, 공간 부족 등
-  - `403 Forbidden`: 인증/권한 오류
-  - `404 Not Found`: package_id 없음
+  - `200 OK`: Returns a confirmation message and the `bin_allocation` map. Example: `{"message": "Bin allocation completed", "bin_allocation": {"BIN001": 10, "BIN003": 5}}`
+  - `400 Bad Request`: If the package status is incorrect, required information (like product volume) is missing, or there is not enough space in the bins.
+  - `403 Forbidden`: If the user's role is not `binner`.
+  - `404 Not Found`: If the `package_id` or its corresponding product does not exist.
 
 ---
 
@@ -181,22 +184,22 @@ https://ozw3p7h26e.execute-api.us-east-2.amazonaws.com/Prod
 - **Parameters:**
   - `package_id` (URL path parameter)
 - **Response:**
-  - `200 OK`: 패키지 정보 (JSON)
-  - `400 Bad Request`: package_id 누락
-  - `404 Not Found`: 해당 package_id 없음
+  - `200 OK`: Package information (JSON).
+  - `400 Bad Request`: `package_id` is missing.
+  - `404 Not Found`: The specified `package_id` does not exist.
 
-**예시 요청:**
+**Example Request:**
 ```
 GET /package/PACK38627
 Authorization: <api_key>
 ```
 
-**예시 응답:**
+**Example Response:**
 ```json
 {
   "package_id": "PACK001",
-  "name": "샘플 패키지",
-  "status": "배송중"
+  "name": "Sample Package",
+  "status": "Shipped"
 }
 ```
 
@@ -448,6 +451,34 @@ Authorization: <api_key_with_dispatcher_role>
 ```json
 {
     "message": "Pick slip PS0005 has been dispatched successfully."
+}
+```
+
+---
+
+### 16. Close Binning
+
+- **Path:** `/packages/{package_id}/close-binning`
+- **Method:** `POST`
+- **Authorization:** `Authorization` header with api_key required (`role` must be `binner`)
+- **Behavior:**
+  - Authenticates and authorizes the user, checking if the `role` is `binner`.
+  - Updates the specified `package_id`'s status to `BINNED` and records the current timestamp in the `binned_date` field.
+- **Response:**
+  - `200 OK`: Confirmation message.
+  - `403 Forbidden`: Unauthorized role.
+  - `404 Not Found`: The specified `package_id` does not exist.
+
+**Example Request:**
+```
+POST /packages/PACK001/close-binning
+Authorization: <api_key_with_binner_role>
+```
+
+**Example Response (Success):**
+```json
+{
+    "message": "Package PACK001 has been binned successfully."
 }
 ```
 

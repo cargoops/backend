@@ -783,6 +783,37 @@ Resources:
             Auth:
               Authorizer: NONE
 
+  CloseBinningFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: close_binning.app.lambda_handler
+      CodeUri: src
+      Events:
+        CloseBinning:
+          Type: Api
+          Properties:
+            Path: /packages/{package_id}/close-binning
+            Method: post
+            RestApiId: !Ref Api
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref PackagesTable
+
+  CloseBinningOptionsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: options_handler.lambda_handler
+      CodeUri: src
+      Events:
+        CloseBinningOptions:
+          Type: Api
+          Properties:
+            Path: /packages/{package_id}/close-binning
+            Method: options
+            RestApiId: !Ref Api
+            Auth:
+              Authorizer: NONE
+
 Outputs:
   ApiUrl:
     Description: "Invoke URL"
