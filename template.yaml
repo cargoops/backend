@@ -752,6 +752,37 @@ Resources:
             Auth:
               Authorizer: NONE
 
+  DispatchPickSlipFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: dispatch_pick_slip.app.lambda_handler
+      CodeUri: src
+      Events:
+        DispatchPickSlip:
+          Type: Api
+          Properties:
+            Path: /pick-slips/{pick_slip_id}/dispatch
+            Method: post
+            RestApiId: !Ref Api
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref PickSlipsTable
+
+  DispatchPickSlipOptionsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: options_handler.lambda_handler
+      CodeUri: src
+      Events:
+        DispatchPickSlipOptions:
+          Type: Api
+          Properties:
+            Path: /pick-slips/{pick_slip_id}/dispatch
+            Method: options
+            RestApiId: !Ref Api
+            Auth:
+              Authorizer: NONE
+
 Outputs:
   ApiUrl:
     Description: "Invoke URL"

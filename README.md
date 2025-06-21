@@ -426,6 +426,34 @@ Authorization: <api_key_with_packer_role>
 
 ---
 
+### 15. Dispatch Pick Slip
+
+- **Path:** `/pick-slips/{pick_slip_id}/dispatch`
+- **Method:** `POST`
+- **Authorization:** `Authorization` header with api_key required (`role` must be `dispatcher`)
+- **Behavior:**
+  - Authenticates and authorizes the user, checking if the `role` is `dispatcher`.
+  - Updates the specified `pick_slip_id`'s status to `DISPATCHED` and records the current timestamp in the `dispatched_date` field.
+- **Response:**
+  - `200 OK`: Confirmation message.
+  - `403 Forbidden`: Unauthorized role.
+  - `404 Not Found`: The specified `pick_slip_id` does not exist.
+
+**Example Request:**
+```
+POST /pick-slips/PS0005/dispatch
+Authorization: <api_key_with_dispatcher_role>
+```
+
+**Example Response (Success):**
+```json
+{
+    "message": "Pick slip PS0005 has been dispatched successfully."
+}
+```
+
+---
+
 ## Error Handling
 
 All endpoints return errors in the following format:
