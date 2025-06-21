@@ -721,6 +721,37 @@ Resources:
             Auth:
               Authorizer: NONE
 
+  ClosePackingFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: close_packing.app.lambda_handler
+      CodeUri: src
+      Events:
+        ClosePacking:
+          Type: Api
+          Properties:
+            Path: /packing/{pick_slip_id}/close
+            Method: post
+            RestApiId: !Ref Api
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref PickSlipsTable
+
+  ClosePackingOptionsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: options_handler.lambda_handler
+      CodeUri: src
+      Events:
+        ClosePackingOptions:
+          Type: Api
+          Properties:
+            Path: /packing/{pick_slip_id}/close
+            Method: options
+            RestApiId: !Ref Api
+            Auth:
+              Authorizer: NONE
+
 Outputs:
   ApiUrl:
     Description: "Invoke URL"

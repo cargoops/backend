@@ -398,6 +398,34 @@ Content-Type: application/json
 
 ---
 
+### 14. Close Packing
+
+- **Path:** `/packing/{pick_slip_id}/close`
+- **Method:** `POST`
+- **Authorization:** `Authorization` header with api_key required (`role` must be `packer`)
+- **Behavior:**
+  - Authenticates and authorizes the user, checking if the `role` is `packer`.
+  - Updates the specified `pick_slip_id`'s status to `READY-FOR-DISPATCH` and records the current timestamp in the `packed_date` field.
+- **Response:**
+  - `200 OK`: Confirmation message.
+  - `403 Forbidden`: Unauthorized role.
+  - `404 Not Found`: The specified `pick_slip_id` does not exist.
+
+**Example Request:**
+```
+POST /packing/PS0005/close
+Authorization: <api_key_with_packer_role>
+```
+
+**Example Response (Success):**
+```json
+{
+    "message": "Pick slip PS0005 has been closed and is ready for dispatch."
+}
+```
+
+---
+
 ## Error Handling
 
 All endpoints return errors in the following format:
