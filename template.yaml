@@ -242,6 +242,8 @@ Resources:
     Properties:
       Handler: bin_allocation.app.lambda_handler
       CodeUri: src
+      ProvisionedConcurrencyConfig:
+        ProvisionedConcurrentExecutions: 1
       Events:
         BinAllocation:
           Type: Api
@@ -262,6 +264,8 @@ Resources:
     Properties:
       Handler: read_storing_orders.app.lambda_handler
       CodeUri: src
+      ProvisionedConcurrencyConfig:
+        ProvisionedConcurrentExecutions: 1
       Events:
         ReadStoringOrders:
           Type: Api
@@ -284,6 +288,8 @@ Resources:
     Properties:
       Handler: read_packages.app.lambda_handler
       CodeUri: src
+      ProvisionedConcurrencyConfig:
+        ProvisionedConcurrentExecutions: 1
       Events:
         ReadPackages:
           Type: Api
@@ -300,6 +306,8 @@ Resources:
     Properties:
       Handler: receive_order.app.lambda_handler
       CodeUri: src
+      ProvisionedConcurrencyConfig:
+        ProvisionedConcurrentExecutions: 1
       Events:
         ReceiveOrder:
           Type: Api
@@ -318,6 +326,8 @@ Resources:
     Properties:
       Handler: update_discrepancy.app.lambda_handler
       CodeUri: src
+      ProvisionedConcurrencyConfig:
+        ProvisionedConcurrentExecutions: 1
       Events:
         UpdateDiscrepancy:
           Type: Api
@@ -334,6 +344,8 @@ Resources:
     Properties:
       Handler: get_api_key_record.app.lambda_handler
       CodeUri: src
+      ProvisionedConcurrencyConfig:
+        ProvisionedConcurrentExecutions: 1
       Events:
         GetApiKeyRecord:
           Type: Api
@@ -352,6 +364,8 @@ Resources:
     Properties:
       Handler: tq_quality_check.app.lambda_handler
       CodeUri: src
+      ProvisionedConcurrencyConfig:
+        ProvisionedConcurrentExecutions: 1
       Events:
         TqQualityCheck:
           Type: Api
@@ -448,6 +462,8 @@ Resources:
     Properties:
       Handler: get_package.lambda_function.lambda_handler
       CodeUri: src
+      ProvisionedConcurrencyConfig:
+        ProvisionedConcurrentExecutions: 1
       Events:
         GetPackage:
           Type: Api
@@ -569,6 +585,8 @@ Resources:
     Properties:
       Handler: read_pick_slips.app.lambda_handler
       CodeUri: src
+      ProvisionedConcurrencyConfig:
+        ProvisionedConcurrentExecutions: 1
       Events:
         ReadPickSlips:
           Type: Api
@@ -585,6 +603,8 @@ Resources:
     Properties:
       Handler: read_pick_orders.app.lambda_handler
       CodeUri: src
+      ProvisionedConcurrencyConfig:
+        ProvisionedConcurrentExecutions: 1
       Events:
         ReadPickOrders:
           Type: Api
@@ -601,6 +621,8 @@ Resources:
     Properties:
       Handler: get_next_pick_order.app.lambda_handler
       CodeUri: src
+      ProvisionedConcurrencyConfig:
+        ProvisionedConcurrentExecutions: 1
       Events:
         GetNextPickOrder:
           Type: Api
@@ -662,6 +684,8 @@ Resources:
     Properties:
       Handler: close_pick_order.app.lambda_handler
       CodeUri: src
+      ProvisionedConcurrencyConfig:
+        ProvisionedConcurrentExecutions: 1
       Events:
         ClosePickOrder:
           Type: Api
@@ -695,6 +719,8 @@ Resources:
     Properties:
       Handler: start_packing.app.lambda_handler
       CodeUri: src
+      ProvisionedConcurrencyConfig:
+        ProvisionedConcurrentExecutions: 1
       Events:
         StartPacking:
           Type: Api
@@ -726,6 +752,8 @@ Resources:
     Properties:
       Handler: close_packing.app.lambda_handler
       CodeUri: src
+      ProvisionedConcurrencyConfig:
+        ProvisionedConcurrentExecutions: 1
       Events:
         ClosePacking:
           Type: Api
@@ -757,6 +785,8 @@ Resources:
     Properties:
       Handler: dispatch_pick_slip.app.lambda_handler
       CodeUri: src
+      ProvisionedConcurrencyConfig:
+        ProvisionedConcurrentExecutions: 1
       Events:
         DispatchPickSlip:
           Type: Api
@@ -788,6 +818,8 @@ Resources:
     Properties:
       Handler: close_binning.app.lambda_handler
       CodeUri: src
+      ProvisionedConcurrencyConfig:
+        ProvisionedConcurrentExecutions: 1
       Events:
         CloseBinning:
           Type: Api
