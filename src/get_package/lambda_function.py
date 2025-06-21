@@ -9,7 +9,7 @@ def lambda_handler(event, context):
         return respond(400, {'error': 'package_id가 필요합니다.'})
 
     try:
-        resp = packages_table.get_item(Key={'package_id': package_id})
+        resp = packages_table.get_item(Key={'package_id': package_id}, ConsistentRead=True)
         record = resp.get('Item')
         if not record:
             return respond(404, {'error': '해당 package_id의 레코드를 찾을 수 없습니다.'})

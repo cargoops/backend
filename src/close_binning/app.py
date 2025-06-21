@@ -34,7 +34,7 @@ def lambda_handler(event, context):
 
         # Check if the package exists
         print(f"Checking if package {package_id} exists in DynamoDB")
-        item_response = packages_table.get_item(Key={'package_id': package_id})
+        item_response = packages_table.get_item(Key={'package_id': package_id}, ConsistentRead=True)
         if 'Item' not in item_response:
             print(f"Package {package_id} not found in database")
             return {

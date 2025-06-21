@@ -44,7 +44,7 @@ def lambda_handler(event, context):
 
         # Check if the pick slip exists first
         print(f"Checking if pick slip {pick_slip_id} exists")
-        item_response = pick_slips_table.get_item(Key={'pick_slip_id': pick_slip_id})
+        item_response = pick_slips_table.get_item(Key={'pick_slip_id': pick_slip_id}, ConsistentRead=True)
         if 'Item' not in item_response:
             print(f"Not Found: Pick slip {pick_slip_id} not found")
             return {

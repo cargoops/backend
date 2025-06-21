@@ -39,7 +39,7 @@ def lambda_handler(event, context):
             }
 
         # 1. Fetch the pick order and check its status and owner
-        order_response = pick_orders_table.get_item(Key={'pick_order_id': pick_order_id})
+        order_response = pick_orders_table.get_item(Key={'pick_order_id': pick_order_id}, ConsistentRead=True)
         order = order_response.get('Item')
 
         if not order:

@@ -19,7 +19,7 @@ def lambda_handler(event, context):
         print(f"RFID ID: {rfid_id}, Package ID: {package_id}, TQ Date: {tq_date}")
         
         # 1. Query Packages table with package_id
-        package_resp = packages_table.get_item(Key={'package_id': package_id})
+        package_resp = packages_table.get_item(Key={'package_id': package_id}, ConsistentRead=True)
         package = package_resp.get('Item')
         if not package:
             print(f"Package {package_id} not found.")

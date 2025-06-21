@@ -38,7 +38,7 @@ def lambda_handler(event, context):
         return respond(400, {'message': 'Invalid input values.'})
 
     # Retrieve Package Record
-    r = packages_table.get_item(Key={'package_id': package_id})
+    r = packages_table.get_item(Key={'package_id': package_id}, ConsistentRead=True)
     package = r.get('Item')
     if not package:
         return respond(404, {'message': 'Package with this package_id not found.'})

@@ -28,7 +28,7 @@ def lambda_handler(event, context):
             }
 
         # Check if the pick slip exists
-        item_response = pick_slips_table.get_item(Key={'pick_slip_id': pick_slip_id})
+        item_response = pick_slips_table.get_item(Key={'pick_slip_id': pick_slip_id}, ConsistentRead=True)
         if 'Item' not in item_response:
             return {
                 'statusCode': 404,

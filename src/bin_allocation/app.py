@@ -31,7 +31,7 @@ def lambda_handler(event, context):
 
     # 3. Retrieve Package Record
     print(f"Retrieving Package: package_id={package_id}")
-    r = packages_table.get_item(Key={'package_id': package_id})
+    r = packages_table.get_item(Key={'package_id': package_id}, ConsistentRead=True)
     package = r.get('Item')
     if not package:
         print("Package Not Found")
@@ -41,7 +41,7 @@ def lambda_handler(event, context):
     product_id = package.get('product_id')
     print(f"Package Info: quantity={quantity}, product_id={product_id}")
     
-    product = products_table.get_item(Key={'product_id': product_id})
+    product = products_table.get_item(Key={'product_id': product_id}, ConsistentRead=True)
     if not product:
         print(f"Product Not Found: product_id={product_id}")
         return respond(404, {'message': 'Product with this product_id not found.'})

@@ -16,7 +16,7 @@ def lambda_handler(event, context):
     if not api_key:
         return respond(400, {'message': 'api_key is required'})
 
-    rec = api_keys_table.get_item(Key={'api_key': api_key}).get('Item')
+    rec = api_keys_table.get_item(Key={'api_key': api_key}, ConsistentRead=True).get('Item')
     if not rec:
         return respond(404, {'message': 'Not found'})
 

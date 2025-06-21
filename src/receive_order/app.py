@@ -19,7 +19,7 @@ def lambda_handler(event, context):
         return respond(400, {'message':'Invalid input'})
 
     # fetch order
-    r = storing_table.get_item(Key={'storing_order_id': sid})
+    r = storing_table.get_item(Key={'storing_order_id': sid}, ConsistentRead=True)
     order = r.get('Item')
     if not order:
         return respond(404, {'message':'Order not found'})
