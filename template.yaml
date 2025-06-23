@@ -231,6 +231,7 @@ Resources:
             Identity:
               Headers:
                 - Authorization
+            AuthorizerResultTtlInSeconds: 0
       Cors:
         AllowOrigin: "'*'"
         AllowHeaders: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
