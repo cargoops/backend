@@ -10,6 +10,7 @@ items_table     = dynamodb.Table(os.environ['ITEMS_TABLE'])
 api_keys_table  = dynamodb.Table(os.environ['API_KEYS_TABLE'])
 bins_table      = dynamodb.Table(os.environ['BINS_TABLE'])
 products_table  = dynamodb.Table(os.environ['PRODUCTS_TABLE'])
+inventory_table = dynamodb.Table(os.environ['INVENTORY_TABLE'])
 
 print("DynamoDB resources initialized successfully")
 

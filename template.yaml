@@ -850,6 +850,39 @@ Resources:
             Auth:
               Authorizer: NONE
 
+  ReadInventoryFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Description: "Read all inventory (role: admin)"
+      Handler: read_inventory.app.lambda_handler
+      CodeUri: src
+      Events:
+        ReadInventory:
+          Type: Api
+          Properties:
+            Path: /inventory
+            Method: get
+            RestApiId: !Ref Api
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref InventoryTable
+
+  InventoryOptionsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Description: "CORS/OPTIONS handler for inventory"
+      Handler: options_handler.lambda_handler
+      CodeUri: src
+      Events:
+        InventoryOptions:
+          Type: Api
+          Properties:
+            Path: /inventory
+            Method: options
+            RestApiId: !Ref Api
+            Auth:
+              Authorizer: NONE
+
 Outputs:
   ApiUrl:
     Description: "Invoke URL"

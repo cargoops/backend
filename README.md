@@ -1,5 +1,18 @@
 # Backend API Documentation
 
+---
+
+## CI/CD 배포 예시 (SAM)
+
+```bash
+# 빌드
+sam build
+# 배포 (스택명: cargoops-backend)
+sam deploy --stack-name cargoops-backend --resolve-s3 --capabilities CAPABILITY_IAM --region us-east-2
+```
+
+---
+
 ## Overview
 
 This backend provides APIs for managing storing orders, package inspections, bin allocation, and user authentication/authorization.  
@@ -205,7 +218,43 @@ Authorization: <api_key>
 
 ---
 
-### 9. Read Pick Slips
+### 9. Read Inventory
+
+- **Path:** `/inventory`
+- **Method:** `GET`
+- **Authorization:** `Authorization` header with api_key required (`role` must be `admin`)
+- **Behavior:**
+  - `role`이 `admin`인 경우에만 전체 인벤토리 테이블을 반환합니다.
+  - 그 외의 경우 `403 Forbidden` 반환.
+- **Response:**
+  - `200 OK`: `{ "data": [ ...inventory ] }`
+  - `403 Forbidden`: Unauthorized role
+
+**Example Request:**
+```
+GET /inventory
+Authorization: <api_key_with_admin_role>
+```
+
+**Example Response:**
+```json
+[
+  {
+    "bin_id": "BIN1",
+    "product_id": "PROD13",
+    "quantity": 5
+  },
+  {
+    "bin_id": "BIN2",
+    "product_id": "PROD14",
+    "quantity": 10
+  }
+]
+```
+
+---
+
+### 10. Read Pick Slips
 
 - **Path:** `/pick-slips`
 - **Method:** `GET`
