@@ -660,6 +660,7 @@ Resources:
   ClosePickOrderFunction:
     Type: AWS::Serverless::Function
     Properties:
+      Description: "Close pick order (role: picker)"
       Handler: close_pick_order.app.lambda_handler
       CodeUri: src
       Events:
@@ -678,6 +679,7 @@ Resources:
   ClosePickOrderOptionsFunction:
     Type: AWS::Serverless::Function
     Properties:
+      Description: "CORS/OPTIONS handler for closing pick order"
       Handler: options_handler.lambda_handler
       CodeUri: src
       Events:
@@ -693,6 +695,7 @@ Resources:
   StartPackingFunction:
     Type: AWS::Serverless::Function
     Properties:
+      Description: "Start packing for the oldest pick slip in a zone (role: packer)"
       Handler: start_packing.app.lambda_handler
       CodeUri: src
       Events:
@@ -709,6 +712,7 @@ Resources:
   StartPackingOptionsFunction:
     Type: AWS::Serverless::Function
     Properties:
+      Description: "CORS/OPTIONS handler for start packing"
       Handler: options_handler.lambda_handler
       CodeUri: src
       Events:
@@ -724,6 +728,7 @@ Resources:
   ClosePackingFunction:
     Type: AWS::Serverless::Function
     Properties:
+      Description: "Close packing for a pick slip (role: packer)"
       Handler: close_packing.app.lambda_handler
       CodeUri: src
       Events:
@@ -740,6 +745,7 @@ Resources:
   ClosePackingOptionsFunction:
     Type: AWS::Serverless::Function
     Properties:
+      Description: "CORS/OPTIONS handler for close packing"
       Handler: options_handler.lambda_handler
       CodeUri: src
       Events:
@@ -755,6 +761,7 @@ Resources:
   DispatchPickSlipFunction:
     Type: AWS::Serverless::Function
     Properties:
+      Description: "Dispatch a pick slip (role: dispatcher)"
       Handler: dispatch_pick_slip.app.lambda_handler
       CodeUri: src
       Events:
@@ -771,6 +778,7 @@ Resources:
   DispatchPickSlipOptionsFunction:
     Type: AWS::Serverless::Function
     Properties:
+      Description: "CORS/OPTIONS handler for dispatch pick slip"
       Handler: options_handler.lambda_handler
       CodeUri: src
       Events:
@@ -786,6 +794,7 @@ Resources:
   CloseBinningFunction:
     Type: AWS::Serverless::Function
     Properties:
+      Description: "Close binning for a package (role: binner)"
       Handler: close_binning.app.lambda_handler
       CodeUri: src
       Events:
@@ -802,6 +811,7 @@ Resources:
   CloseBinningOptionsFunction:
     Type: AWS::Serverless::Function
     Properties:
+      Description: "CORS/OPTIONS handler for close binning"
       Handler: options_handler.lambda_handler
       CodeUri: src
       Events:
