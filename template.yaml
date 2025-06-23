@@ -205,6 +205,7 @@ Resources:
   AuthorizerFunction:
     Type: AWS::Serverless::Function
     Properties:
+      Description: "API key authorizer for all endpoints"
       Handler: authorizer.app.lambda_handler
       CodeUri: src
       Policies:
@@ -240,6 +241,7 @@ Resources:
   BinAllocationFunction:
     Type: AWS::Serverless::Function
     Properties:
+      Description: "Allocate bins for packages (role: binner)"
       Handler: bin_allocation.app.lambda_handler
       CodeUri: src
       Events:
@@ -260,6 +262,7 @@ Resources:
   ReadStoringOrdersFunction:
     Type: AWS::Serverless::Function
     Properties:
+      Description: "Read storing orders (role: receiver/admin)"
       Handler: read_storing_orders.app.lambda_handler
       CodeUri: src
       Events:
@@ -282,6 +285,7 @@ Resources:
   ReadPackagesFunction:
     Type: AWS::Serverless::Function
     Properties:
+      Description: "Read packages (role: any authenticated)"
       Handler: read_packages.app.lambda_handler
       CodeUri: src
       Events:
@@ -298,6 +302,7 @@ Resources:
   ReceiveOrderFunction:
     Type: AWS::Serverless::Function
     Properties:
+      Description: "Receive storing order (role: receiver)"
       Handler: receive_order.app.lambda_handler
       CodeUri: src
       Events:
@@ -316,6 +321,7 @@ Resources:
   UpdateDiscrepancyFunction:
     Type: AWS::Serverless::Function
     Properties:
+      Description: "Update discrepancy for storing order (role: receiver)"
       Handler: update_discrepancy.app.lambda_handler
       CodeUri: src
       Events:
@@ -332,6 +338,7 @@ Resources:
   GetApiKeyRecordFunction:
     Type: AWS::Serverless::Function
     Properties:
+      Description: "Get API key record (no auth)"
       Handler: get_api_key_record.app.lambda_handler
       CodeUri: src
       Events:
@@ -350,6 +357,7 @@ Resources:
   TqQualityCheckFunction:
     Type: AWS::Serverless::Function
     Properties:
+      Description: "TQ quality check for package (role: tq_employee)"
       Handler: tq_quality_check.app.lambda_handler
       CodeUri: src
       Events:
@@ -376,6 +384,7 @@ Resources:
   TqRfidProducerFunction:
     Type: AWS::Serverless::Function
     Properties:
+      Description: "Produce SQS message for TQ RFID"
       Handler: tq_rfid_producer.lambda_handler
       Runtime: python3.9
       CodeUri: src
@@ -389,6 +398,7 @@ Resources:
   BinRfidProducerFunction:
     Type: AWS::Serverless::Function
     Properties:
+      Description: "Produce SQS message for Bin RFID"
       Handler: bin_rfid_producer.lambda_handler
       Runtime: python3.9
       CodeUri: src
@@ -402,6 +412,7 @@ Resources:
   TqRfidConsumerFunction:
     Type: AWS::Serverless::Function
     Properties:
+      Description: "Consume SQS message for TQ RFID and update tables"
       Handler: tq_rfid_consumer.lambda_handler
       Runtime: python3.9
       CodeUri: src
@@ -424,6 +435,7 @@ Resources:
   BinRfidConsumerFunction:
     Type: AWS::Serverless::Function
     Properties:
+      Description: "Consume SQS message for Bin RFID and update tables"
       Handler: bin_rfid_consumer.lambda_handler
       Runtime: python3.9
       CodeUri: src
@@ -446,6 +458,7 @@ Resources:
   GetPackageFunction:
     Type: AWS::Serverless::Function
     Properties:
+      Description: "Get package details (role: any authenticated)"
       Handler: get_package.lambda_function.lambda_handler
       CodeUri: src
       Events:
@@ -462,6 +475,7 @@ Resources:
   StoringOrdersOptionsFunction:
     Type: AWS::Serverless::Function
     Properties:
+      Description: "CORS/OPTIONS handler for storing orders"
       Handler: options_handler.lambda_handler
       CodeUri: src
       Events:
@@ -477,6 +491,7 @@ Resources:
   PackagesOptionsFunction:
     Type: AWS::Serverless::Function
     Properties:
+      Description: "CORS/OPTIONS handler for packages"
       Handler: options_handler.lambda_handler
       CodeUri: src
       Events:
@@ -492,6 +507,7 @@ Resources:
   PackageOptionsFunction:
     Type: AWS::Serverless::Function
     Properties:
+      Description: "CORS/OPTIONS handler for package detail"
       Handler: options_handler.lambda_handler
       CodeUri: src
       Events:
@@ -507,6 +523,7 @@ Resources:
   BinAllocationOptionsFunction:
     Type: AWS::Serverless::Function
     Properties:
+      Description: "CORS/OPTIONS handler for bin allocation"
       Handler: options_handler.lambda_handler
       CodeUri: src
       Events:
@@ -522,6 +539,7 @@ Resources:
   TqQualityCheckOptionsFunction:
     Type: AWS::Serverless::Function
     Properties:
+      Description: "CORS/OPTIONS handler for TQ quality check"
       Handler: options_handler.lambda_handler
       CodeUri: src
       Events:
@@ -537,6 +555,7 @@ Resources:
   UpdateDiscrepancyOptionsFunction:
     Type: AWS::Serverless::Function
     Properties:
+      Description: "CORS/OPTIONS handler for update discrepancy"
       Handler: options_handler.lambda_handler
       CodeUri: src
       Events:
@@ -552,6 +571,7 @@ Resources:
   ReceiveOrderOptionsFunction:
     Type: AWS::Serverless::Function
     Properties:
+      Description: "CORS/OPTIONS handler for receive order"
       Handler: options_handler.lambda_handler
       CodeUri: src
       Events:
@@ -567,6 +587,7 @@ Resources:
   ReadPickSlipsFunction:
     Type: AWS::Serverless::Function
     Properties:
+      Description: "Read all pick slips (role: admin)"
       Handler: read_pick_slips.app.lambda_handler
       CodeUri: src
       Events:
@@ -583,6 +604,7 @@ Resources:
   ReadPickOrdersFunction:
     Type: AWS::Serverless::Function
     Properties:
+      Description: "Read all pick orders (role: admin)"
       Handler: read_pick_orders.app.lambda_handler
       CodeUri: src
       Events:
@@ -599,6 +621,7 @@ Resources:
   GetNextPickOrderFunction:
     Type: AWS::Serverless::Function
     Properties:
+      Description: "Get next pick order for picker (role: picker)"
       Handler: get_next_pick_order.app.lambda_handler
       CodeUri: src
       Events:
@@ -615,6 +638,7 @@ Resources:
   PickSlipsOptionsFunction:
     Type: AWS::Serverless::Function
     Properties:
+      Description: "CORS/OPTIONS handler for pick slips"
       Handler: options_handler.lambda_handler
       CodeUri: src
       Events:
@@ -630,6 +654,7 @@ Resources:
   PickOrdersOptionsFunction:
     Type: AWS::Serverless::Function
     Properties:
+      Description: "CORS/OPTIONS handler for pick orders"
       Handler: options_handler.lambda_handler
       CodeUri: src
       Events:
@@ -645,6 +670,7 @@ Resources:
   GetNextPickOrderOptionsFunction:
     Type: AWS::Serverless::Function
     Properties:
+      Description: "CORS/OPTIONS handler for get next pick order"
       Handler: options_handler.lambda_handler
       CodeUri: src
       Events:
