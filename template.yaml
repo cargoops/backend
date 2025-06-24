@@ -314,6 +314,9 @@ Resources:
             Path: /api-key
             Method: get
             RestApiId: !Ref Api
+      Policies:
+         - DynamoDBReadPolicy:
+             TableName: !Ref ApiKeysTable
 
   TqQualityCheckFunction:
     Type: AWS::Serverless::Function
