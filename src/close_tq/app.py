@@ -30,7 +30,7 @@ def lambda_handler(event, context):
         timestamp = datetime.now().isoformat()
         packages_table.update_item(
             Key={'package_id': package_id},
-            UpdateExpression="SET package_status = :status, ready_for_bin_allocation_date = :date",
+            UpdateExpression="SET status = :status, ready_for_bin_allocation_date = :date",
             ExpressionAttributeValues={':status': 'READY-FOR-BIN-ALLOCATION', ':date': timestamp}
         )
 
