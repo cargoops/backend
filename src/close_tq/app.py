@@ -9,11 +9,15 @@ def lambda_handler(event, context):
             role = params.get('role')
             employee_id = params.get('employee_id')
             path_params = event.get('pathParameters', {})
+            flag = params.get('flag')
+            description = params.get('description', '')
         else:
             body = json.loads(event.get('body', '{}'))
             role = body.get('role')
             employee_id = body.get('employee_id')
             path_params = event.get('pathParameters', {})
+            flag = body.get('flag')
+            description = body.get('description', '')
         package_id = path_params.get('package_id')
         if not all([employee_id, role, package_id]):
             return respond(400, {'message': 'Bad Request: Missing required parameters.'})
@@ -26,15 +30,26 @@ def lambda_handler(event, context):
         if not package:
             return respond(404, {'message': 'Package not found.'})
 
-        # 2. Update the package status to READY-FOR-BIN-ALLOCATION
         timestamp = datetime.now().isoformat()
-        packages_table.update_item(
-            Key={'package_id': package_id},
-            UpdateExpression="SET status = :status, ready_for_bin_allocation_date = :date",
-            ExpressionAttributeValues={':status': 'READY-FOR-BIN-ALLOCATION', ':date': timestamp}
-        )
-
-        return respond(200, {'message': f'Package {package_id} is now READY-FOR-BIN-ALLOCATION.'})
+        if flag == 'fail':
+            update_expr = "SET #s = :status, tq_fail_description = :desc, tq_close_date = :date"
+            expr_attr_names = {'#s': 'status'}
+            expr_attr_values = {':status': 'TQ-QUALITY-CHECK-FAILED', ':desc': description, ':date': timestamp}
+            packages_table.update_item(
+                Key={'package_id': package_id},
+                UpdateExpression=update_expr,
+                ExpressionAttributeNames=expr_attr_names,
+                ExpressionAttributeValues=expr_attr_values
+            )
+            return respond(200, {'message': f'Package {package_id} is now TQ-QUALITY-CHECK-FAILED.'})
+        else:
+            packages_table.update_item(
+                Key={'package_id': package_id},
+                UpdateExpression="SET #s = :status, ready_for_bin_allocation_date = :date",
+                ExpressionAttributeNames={'#s': 'status'},
+                ExpressionAttributeValues={':status': 'READY-FOR-BIN-ALLOCATION', ':date': timestamp}
+            )
+            return respond(200, {'message': f'Package {package_id} is now READY-FOR-BIN-ALLOCATION.'})
 
     except Exception as e:
         print(f"Error: {e}")
