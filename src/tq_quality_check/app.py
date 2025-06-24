@@ -34,6 +34,7 @@ def lambda_handler(event, context):
         body = json.loads(event['body'])
         package_id = body['package_id']
         flag = body['flag']
+        description = body.get('description', '')  # description 필드 추가
     except Exception:
         return respond(400, {'message': 'Invalid input values.'})
 
@@ -61,9 +62,9 @@ def lambda_handler(event, context):
     elif flag == 'fail':
         packages_table.update_item(
             Key={'package_id': package_id},
-            UpdateExpression="SET #s=:s, #t=:t, #d=:d",
-            ExpressionAttributeNames={'#s': 'status', '#t': 'tq_staff_id', '#d': 'tq_quality_check_date'},
-            ExpressionAttributeValues={':s': 'TQ-QUALITY-CHECK-FAILED', ':t': employee_id, ':d': now}
+            UpdateExpression="SET #s=:s, #t=:t, #d=:d, #desc=:desc",
+            ExpressionAttributeNames={'#s': 'status', '#t': 'tq_staff_id', '#d': 'tq_quality_check_date', '#desc': 'tq_fail_description'},
+            ExpressionAttributeValues={':s': 'TQ-QUALITY-CHECK-FAILED', ':t': employee_id, ':d': now, ':desc': description}
         )
         return respond(200, {'message': 'Package status changed to TQ-QUALITY-CHECK-FAILED.'})
     else:
