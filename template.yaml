@@ -352,6 +352,23 @@ Resources:
         - DynamoDBCrudPolicy:
             TableName: !Ref PackagesTable
 
+  StartTqFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Description: "Start TQ for a package (role: any)"
+      Handler: start_tq.app.lambda_handler
+      CodeUri: src
+      Events:
+        StartTq:
+          Type: Api
+          Properties:
+            Path: /packages/{package_id}/start-tq
+            Method: post
+            RestApiId: !Ref Api
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref PackagesTable
+
   TqRfidSqsQueue:
     Type: AWS::SQS::Queue
     Properties:
@@ -812,6 +829,20 @@ Resources:
           Type: Api
           Properties:
             Path: /packages/{package_id}/close-tq
+            Method: options
+            RestApiId: !Ref Api
+
+  StartTqOptionsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Description: "CORS/OPTIONS handler for start tq"
+      Handler: options_handler.lambda_handler
+      CodeUri: src
+      Events:
+        StartTqOptions:
+          Type: Api
+          Properties:
+            Path: /packages/{package_id}/start-tq
             Method: options
             RestApiId: !Ref Api
 

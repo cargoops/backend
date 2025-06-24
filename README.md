@@ -285,6 +285,34 @@ GET /next-pick-order?employee_id=picker001&role=picker
 
 ---
 
+### 18. Start TQ
+
+- **Path:** `/packages/{package_id}/start-tq`
+- **Method:** `POST`
+- **Body:**
+```json
+{
+  "employee_id": "string",
+  "role": "any"
+}
+```
+- **Response:**
+  - `200 OK`: 패키지의 최신 정보(JSON)
+  - `400 Bad Request`: 필수값 누락
+  - `404 Not Found`: 패키지 없음
+
+**예시 curl:**
+```bash
+curl -X POST "https://ozw3p7h26e.execute-api.us-east-2.amazonaws.com/Prod/packages/PACK12345/start-tq" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "employee_id": "tq001",
+    "role": "tq_employee"
+  }'
+```
+
+---
+
 ## Error Handling
 
 모든 엔드포인트는 다음과 같은 형식으로 에러를 반환합니다:
