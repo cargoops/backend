@@ -271,6 +271,20 @@ GET /next-pick-order?employee_id=picker001&role=picker
 
 ---
 
+### 17. Close TQ
+
+- **Path:** `/packages/{package_id}/close-tq`
+- **Method:** `POST`
+- **Body:**
+```json
+{
+  "employee_id": "string",
+  "role": "tq_employee"
+}
+```
+
+---
+
 ## Error Handling
 
 모든 엔드포인트는 다음과 같은 형식으로 에러를 반환합니다:

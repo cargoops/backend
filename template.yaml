@@ -335,6 +335,23 @@ Resources:
         - DynamoDBCrudPolicy:
             TableName: !Ref PackagesTable
 
+  CloseTqFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Description: "Close TQ for a package (role: tq_employee)"
+      Handler: close_tq.app.lambda_handler
+      CodeUri: src
+      Events:
+        CloseTq:
+          Type: Api
+          Properties:
+            Path: /packages/{package_id}/close-tq
+            Method: post
+            RestApiId: !Ref Api
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref PackagesTable
+
   TqRfidSqsQueue:
     Type: AWS::SQS::Queue
     Properties:
@@ -781,6 +798,20 @@ Resources:
           Type: Api
           Properties:
             Path: /packages/{package_id}/close-binning
+            Method: options
+            RestApiId: !Ref Api
+
+  CloseTqOptionsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Description: "CORS/OPTIONS handler for close tq"
+      Handler: options_handler.lambda_handler
+      CodeUri: src
+      Events:
+        CloseTqOptions:
+          Type: Api
+          Properties:
+            Path: /packages/{package_id}/close-tq
             Method: options
             RestApiId: !Ref Api
 

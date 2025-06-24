@@ -14,25 +14,29 @@ def cast_value(val):
     if val == '':
         return None
 
-    # Try to evaluate as a Python literal (for lists/dicts)
-    if (val.startswith('[') and val.endswith(']')) or \
-       (val.startswith('{') and val.endswith('}')):
-        try:
-            return ast.literal_eval(val)
-        except (ValueError, SyntaxError):
-            pass  # Not a valid literal, proceed to other checks
+    # 문자열일 때만 파싱 시도
+    if isinstance(val, str):
+        # Try to evaluate as a Python literal (for lists/dicts)
+        if (val.startswith('[') and val.endswith(']')) or \
+           (val.startswith('{') and val.endswith('}')):
+            try:
+                return ast.literal_eval(val)
+            except (ValueError, SyntaxError):
+                pass  # Not a valid literal, proceed to other checks
 
-    # try int first
-    try:
-        return int(val)
-    except ValueError:
-        pass
-    # then Decimal for floats
-    try:
-        return Decimal(val)
-    except Exception:
-        # fallback to original string
-        return val
+        # try int first
+        try:
+            return int(val)
+        except ValueError:
+            pass
+        # then Decimal for floats
+        try:
+            return Decimal(val)
+        except Exception:
+            # fallback to original string
+            return val
+    # 이미 리스트/딕트 등은 그대로 반환
+    return val
 
 def batch_load(table_name, csv_path):
     print(f"> Loading {csv_path} → {table_name}...")
@@ -43,7 +47,7 @@ def batch_load(table_name, csv_path):
         reader = csv.DictReader(f)
         with table.batch_writer() as batch:
             for row in reader:
-                item = {k: cast_value(v) for k, v in row.items() if cast_value(v) is not None}
+                item = {k: cast_value(v) for k, v in row.items() if k is not None and cast_value(v) is not None}
                 if item:
                     batch.put_item(Item=item)
 

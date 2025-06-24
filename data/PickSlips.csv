@@ -1,7 +1,7 @@
-﻿pick_slip_id,customer_id,pick_slip_created_date,items,requested_delivery_date,pick_slip_status,packer_id,dispatcher_id,packing_zone
-PS0001,CUST0005,2025-06-01,"[{'productId': 'PROD2', 'quantity': 2}]",2025-06-05,DISPATCHED,PACK0123,DISP9999,
-PS0002,CUST0003,2025-06-02,"[{'productId': 'PROD3', 'quantity': 1}, {'productId': 'PROD9', 'quantity': 2}]",2025-06-08,READY-FOR-PACKING,PACK0123,,ZONE_1
-PS0003,CUST0004,2025-06-03,"[{'productId': 'PROD07', 'quantity': 3}]",2025-06-10,READY-FOR-DISPATCH,PACK0123,,
-PS0004,CUST0004,2025-06-04,"[{'productId': 'PROD03', 'quantity': 2}]",2025-06-09,READY-FOR-PACKING,PACK0123,,ZONE_2
-PS0005,CUST0003,2025-06-20,"[{'productId': 'PROD13', 'quantity': 2}, {'productId': 'PROD14', 'quantity': 3}, {'productId': 'PROD09', 'quantity': 2}]",2025-06-25,READY-FOR_PICKING,,,
-PS0006,CUST0009,2025-06-20,"[{'productId': 'PROD04', 'quantity': 3}]",2025-06-30,OPEN,,,
+pick_slip_id,customer_id,pick_slip_created_date,items,requested_delivery_date,pick_slip_status,packer_id,dispatcher_id,packing_zone
+PS0001,CUST0005,2025-06-01T00:00:00.000000,"[{'productId': 'PROD2', 'quantity': 2}]",2025-06-05T00:00:00.000000,DISPATCHED,PACK0123,DISP9999,
+PS0002,CUST0003,2025-06-02T00:00:00.000000,"[{'productId': 'PROD3', 'quantity': 1}, {'productId': 'PROD9', 'quantity': 2}]",2025-06-08T00:00:00.000000,READY-FOR-PACKING,PACK0123,,ZONE_1
+PS0003,CUST0004,2025-06-03T00:00:00.000000,"[{'productId': 'PROD07', 'quantity': 3}]",2025-06-10T00:00:00.000000,READY-FOR-DISPATCH,PACK0123,,
+PS0004,CUST0004,2025-06-04T00:00:00.000000,"[{'productId': 'PROD03', 'quantity': 2}]",2025-06-09T00:00:00.000000,READY-FOR-PACKING,PACK0123,,ZONE_2
+PS0005,CUST0003,2025-06-20T00:00:00.000000,"[{'productId': 'PROD13', 'quantity': 2}, {'productId': 'PROD14', 'quantity': 3}, {'productId': 'PROD09', 'quantity': 2}]",2025-06-25T00:00:00.000000,READY-FOR_PICKING,,,ZONE_2
+PS0006,CUST0009,2025-06-20T00:00:00.000000,"[{'productId': 'PROD04', 'quantity': 3}]",2025-06-30T00:00:00.000000,OPEN,,,
