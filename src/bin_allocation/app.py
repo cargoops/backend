@@ -8,21 +8,20 @@ import boto3
 dynamodb = boto3.resource('dynamodb')
 
 def lambda_handler(event, context):
-    
-    # 1. Authentication and Authorization Check
-    auth = event['requestContext'].get('authorizer', {})
-    print(f"Auth Info: {auth}")
-    if auth.get('role') != 'binner':
-        print(f"Authorization Error: role={auth.get('role')}")
+    if event.get('httpMethod', 'POST') == 'GET':
+        params = event.get('queryStringParameters') or {}
+        role = params.get('role')
+        employee_id = params.get('employee_id')
+        body = params
+    else:
+        body = json.loads(event.get('body', '{}'))
+        role = body.get('role')
+        employee_id = body.get('employee_id')
+    if role != 'binner':
         return respond(403, {'message': 'Unauthorized. (role != binner)'})
-
-    employee_id = auth.get('employee_id')
     if not employee_id:
-        return respond(403, {'message': 'Unauthorized. (employee_id not found in token)'})
-
-    # 2. Parse Input Values
+        return respond(403, {'message': 'Unauthorized. (employee_id not found)'})
     try:
-        body = json.loads(event['body'])
         package_id = body['package_id']
         print(f"Input Values: package_id={package_id}, employee_id={employee_id}")
     except Exception as e:

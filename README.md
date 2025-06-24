@@ -15,8 +15,8 @@ sam deploy --stack-name cargoops-backend --resolve-s3 --capabilities CAPABILITY_
 
 ## Overview
 
-This backend provides APIs for managing storing orders, package inspections, bin allocation, and user authentication/authorization.  
-It uses AWS Lambda, DynamoDB, and a custom API key-based authorization system.
+이 백엔드는 storing orders, package inspections, bin allocation 등을 관리하는 API를 제공합니다. 
+AWS Lambda, DynamoDB를 사용하며, **이제 별도의 인증 없이 모든 요청에서 employee_id와 role을 직접 전달해야 합니다.**
 
 ---
 
@@ -28,21 +28,22 @@ https://ozw3p7h26e.execute-api.us-east-2.amazonaws.com/Prod
 
 ---
 
-## Authentication
+## 인증 및 권한 안내 (2024-06 기준)
 
-- **Type:** Custom API Key
-- **How to authenticate:**  
-  Obtain an API key and include it in the `Authorization` header for each request:
-  ```
-  Authorization: <api_key>
-  ```
-  The authorizer Lambda validates the key and injects `employee_id` and `role` into the request context.
+- **더 이상 API Key, Authorizer, Authorization 헤더를 사용하지 않습니다.**
+- 모든 요청에서 `employee_id`와 `role`을 직접 전달해야 하며, 서버는 이 값만으로 권한을 판단합니다.
+- **POST/PUT 등 body가 있는 요청:**
+  - body(JSON)에 반드시 `employee_id`와 `role`을 포함해야 합니다.
+- **GET 등 body가 없는 요청:**
+  - query string에 반드시 `employee_id`와 `role`을 포함해야 합니다.
+  - 예시: `/inventory?employee_id=admin001&role=admin`
+- 권한이 필요한 엔드포인트는 role 값으로만 판단합니다.
 
 ---
 
 ## API Endpoints
 
-### 1. Get API Key Record
+### 1. Get API Key Record (테스트용, 인증 없음)
 
 - **Path:** `/api-key`
 - **Method:** `POST` or `GET`
@@ -59,14 +60,12 @@ https://ozw3p7h26e.execute-api.us-east-2.amazonaws.com/Prod
 
 - **Path:** `/storing-orders`
 - **Method:** `GET`
-- **Authorization:** `Authorization` header with api_key required
-- **Behavior:**
-  - If `role` is `receiver`: Returns only orders assigned to the receiver.
-  - If `role` is `admin`: Returns all orders.
-  - Otherwise: `403 Forbidden`
-- **Response:**
-  - `200 OK`: `{ "data": [ ...orders ] }`
-  - `403 Forbidden`: Unauthorized role
+- **Parameters (query string):**
+  - `employee_id`, `role` (필수)
+- **예시:**
+```
+GET /storing-orders?employee_id=admin001&role=admin
+```
 
 ---
 
@@ -74,27 +73,18 @@ https://ozw3p7h26e.execute-api.us-east-2.amazonaws.com/Prod
 
 - **Path:** `/storing-orders/receive`
 - **Method:** `POST`
-- **Authorization:** `Authorization` header with api_key required (`role` must be `receiver`)
 - **Body:**
-  ```json
-  {
-    "storing_order_id": "string",
-    "invoice_number": "string",
-    "bill_of_entry_id": "string",
-    "airway_bill_number": "string",
-    "quantity": number,
-    "employee_id": "string"
-  }
-  ```
-- **Behavior:**
-  - Checks for mismatches between input and order data.
-  - If mismatches: Marks order and packages as `INSPECTION-FAILED`.
-  - If no mismatches: Marks order as `RECEIVED` and packages as `READY-FOR-TQ`.
-- **Response:**
-  - `200 OK`: Order received
-  - `400 Bad Request`: Inspection failed or invalid input
-  - `403 Forbidden`: Unauthorized role
-  - `404 Not Found`: Order not found
+```json
+{
+  "storing_order_id": "string",
+  "invoice_number": "string",
+  "bill_of_entry_id": "string",
+  "airway_bill_number": "string",
+  "quantity": number,
+  "employee_id": "string",
+  "role": "receiver"
+}
+```
 
 ---
 
@@ -102,22 +92,15 @@ https://ozw3p7h26e.execute-api.us-east-2.amazonaws.com/Prod
 
 - **Path:** `/storing-orders/discrepancy`
 - **Method:** `PUT`
-- **Authorization:** `Authorization` header with api_key required (`role` must be `receiver`)
-- **Body:**                                                                                                                                                                                                                         
-  ```json
-  {
-    "storing_order_id": "string",
-    "discrepancy_detail": "string"
-  }
-  ```
-- **Behavior:**
-  - Can only update if order status is `INSPECTION-FAILED`.
-  - Updates discrepancy detail and sets inspection result to `Failure`.
-- **Response:**
-  - `200 OK`: Discrepancy updated
-  - `400 Bad Request`: Invalid input or wrong status
-  - `403 Forbidden`: Unauthorized role
-  - `404 Not Found`: Order not found
+- **Body:**
+```json
+{
+  "storing_order_id": "string",
+  "discrepancy_detail": "string",
+  "employee_id": "string",
+  "role": "receiver"
+}
+```
 
 ---
 
@@ -125,30 +108,15 @@ https://ozw3p7h26e.execute-api.us-east-2.amazonaws.com/Prod
 
 - **Path:** `/tq-quality-check`
 - **Method:** `POST`
-- **Authorization:** `Authorization` header with api_key required (`role` must be `tq_employee`)
 - **Body:**
-  ```json
-  {
-    "package_id": "string",
-    "employee_id": "string",
-    "flag": "pass | fail"
-  }
-  ```
-- **Behavior:**
-  - Checks authentication and authorization (`role` must be `tq_employee`).
-  - Accepts a `flag` (`pass` or `fail`) in the request body.
-  - Operates only if the package status for the given `package_id` is `READY-FOR-TQ`.
-    - If `flag` is `pass`, the status is updated to `READY-FOR-RFID-ATTACH`.
-    - If `flag` is `fail`, the status is updated to `TQ-QUALITY-CHECK-FAILED`.
-    - In both cases, `tq_staff_id` and `tq_quality_check_date` are recorded.
-  - Returns an error if the status is not `READY-FOR-TQ`, if authentication fails, or if the `flag` is invalid.
-- **Response:**
-  - `200 OK`:
-    - If `flag` is `pass`: Package status is changed to `READY-FOR-RFID-ATTACH`.
-    - If `flag` is `fail`: Package status is changed to `TQ-QUALITY-CHECK-FAILED`.
-  - `400 Bad Request`: If package status is not `READY-FOR-TQ`, there are input errors, or the flag is invalid.
-  - `403 Forbidden`: Authentication/Authorization error.
-  - `404 Not Found`: If `package_id` does not exist.
+```json
+{
+  "package_id": "string",
+  "employee_id": "string",
+  "role": "tq_employee",
+  "flag": "pass | fail"
+}
+```
 
 ---
 
@@ -156,131 +124,52 @@ https://ozw3p7h26e.execute-api.us-east-2.amazonaws.com/Prod
 
 - **Path:** `/bin-allocation`
 - **Method:** `POST`
-- **Authorization:** `Authorization` header with api_key required (`role` must be `binner`)
 - **Body:**
-  ```json
-  {
-    "package_id": "string"
-  }
-  ```
-- **Behavior:**
-  - Authenticates and authorizes the user, ensuring the `role` is `binner`. The `employee_id` is extracted from the authentication token.
-  - Retrieves the package using `package_id` and checks if its status is `READY-FOR-BIN-ALLOCATION`.
-  - Fetches the product's volume and calculates the total volume required for the package quantity.
-  - Scans available bins and sorts them by `availability_vol` (available volume) in descending order.
-  - It first attempts to place the entire package into a single bin that has enough available volume.
-  - If no single bin is large enough, it distributes the items across multiple bins based on available space.
-  - Updates the `availability_vol` in the `bins` table for each bin used.
-  - Updates the package status to `READY-FOR-BINNING`, and records the `bin_allocation` (a map of bin IDs to quantities), `binner_id`, and `bin_allocation_date`.
-  - Updates the status of all associated RFIDs in the `items` table to `READY-FOR-BINNING`.
-- **Response:**
-  - `200 OK`: Returns a confirmation message and the `bin_allocation` map. Example: `{"message": "Bin allocation completed", "bin_allocation": {"BIN001": 10, "BIN003": 5}}`
-  - `400 Bad Request`: If the package status is incorrect, required information (like product volume) is missing, or there is not enough space in the bins.
-  - `403 Forbidden`: If the user's role is not `binner`.
-  - `404 Not Found`: If the `package_id` or its corresponding product does not exist.
-
----
-
-### 7. Authorizer (Lambda)
-
-- **Path:** Used as a Lambda authorizer for API Gateway
-- **Behavior:**  
-  Validates API key and injects `employee_id` and `role` into request context.
-
----
-
-### 8. Get Package
-
-- **Path:** `/package/{package_id}`
-- **Method:** `GET`
-- **Authorization:** `Authorization` header with api_key required
-- **Parameters:**
-  - `package_id` (URL path parameter)
-- **Response:**
-  - `200 OK`: Package information (JSON).
-  - `400 Bad Request`: `package_id` is missing.
-  - `404 Not Found`: The specified `package_id` does not exist.
-
-**Example Request:**
-```
-GET /package/PACK38627
-Authorization: <api_key>
-```
-
-**Example Response:**
 ```json
 {
-  "package_id": "PACK001",
-  "name": "Sample Package",
-  "status": "Shipped"
+  "package_id": "string",
+  "employee_id": "string",
+  "role": "binner"
 }
 ```
 
 ---
 
-### 9. Read Inventory
+### 7. Get Package
 
-- **Path:** `/inventory`
+- **Path:** `/package/{package_id}`
 - **Method:** `GET`
-- **Authorization:** `Authorization` header with api_key required (`role` must be `admin`)
-- **Behavior:**
-  - `role`이 `admin`인 경우에만 전체 인벤토리 테이블을 반환합니다.
-  - 그 외의 경우 `403 Forbidden` 반환.
-- **Response:**
-  - `200 OK`: `{ "data": [ ...inventory ] }`
-  - `403 Forbidden`: Unauthorized role
-
-**Example Request:**
+- **Parameters (query string):**
+  - `employee_id`, `role` (필수)
+- **예시:**
 ```
-GET /inventory
-Authorization: <api_key_with_admin_role>
-```
-
-**Example Response:**
-```json
-[
-  {
-    "bin_id": "BIN1",
-    "product_id": "PROD13",
-    "quantity": 5
-  },
-  {
-    "bin_id": "BIN2",
-    "product_id": "PROD14",
-    "quantity": 10
-  }
-]
+GET /package/PACK38627?employee_id=admin001&role=admin
 ```
 
 ---
 
-### 10. Read Pick Slips
+### 8. Read Inventory
+
+- **Path:** `/inventory`
+- **Method:** `GET`
+- **Parameters (query string):**
+  - `employee_id`, `role` (필수, role=admin만 허용)
+- **예시:**
+```
+GET /inventory?employee_id=admin001&role=admin
+```
+
+---
+
+### 9. Read Pick Slips
 
 - **Path:** `/pick-slips`
 - **Method:** `GET`
-- **Authorization:** `Authorization` header with api_key required (`role` must be `admin`)
-- **Behavior:**
-  - Returns all pick slips.
-  - Only accessible to users with the `admin` role.
-- **Response:**
-  - `200 OK`: JSON array of all pick slips.
-  - `403 Forbidden`: Unauthorized role.
-
-**Example Request:**
+- **Parameters (query string):**
+  - `employee_id`, `role` (필수, role=admin만 허용)
+- **예시:**
 ```
-GET /pick-slips
-Authorization: <api_key>
-```
-
-**Example Response:**
-```json
-[
-  {
-    "pick_slip_id": "PSLIP001",
-    "details": "[{'product_id': 'PROD1', 'quantity': 5}, {'product_id': 'PROD2', 'quantity': 2}]",
-    "status": "NEW"
-  }
-]
+GET /pick-slips?employee_id=admin001&role=admin
 ```
 
 ---
@@ -289,31 +178,11 @@ Authorization: <api_key>
 
 - **Path:** `/pick-orders`
 - **Method:** `GET`
-- **Authorization:** `Authorization` header with api_key required (`role` must be `admin`)
-- **Behavior:**
-  - Returns all pick orders.
-  - Only accessible to users with the `admin` role.
-- **Response:**
-  - `200 OK`: JSON array of all pick orders.
-  - `403 Forbidden`: Unauthorized role.
-
-**Example Request:**
+- **Parameters (query string):**
+  - `employee_id`, `role` (필수, role=admin만 허용)
+- **예시:**
 ```
-GET /pick-orders
-Authorization: <api_key>
-```
-
-**Example Response:**
-```json
-[
-  {
-    "pick_order_id": "PORD001",
-    "pick_slip_id": "PSLIP001",
-    "product_id": "PROD1",
-    "quantity": 5,
-    "status": "PENDING"
-  }
-]
+GET /pick-orders?employee_id=admin001&role=admin
 ```
 
 ---
@@ -322,41 +191,11 @@ Authorization: <api_key>
 
 - **Path:** `/next-pick-order`
 - **Method:** `GET`
-- **Authorization:** `Authorization` header with api_key required (`role` must be `picker`)
-- **Behavior:**
-  - Authenticates and authorizes the user, checking if the `role` is `picker`.
-  - Finds all pick orders assigned to the picker (`employee_id` from context) with `pick_order_status` as `READY-FOR-PICKING`.
-  - Returns the one with the earliest `order_created_date`.
-- **Response:**
-  - `200 OK`: The next pick order object (JSON).
-  - `403 Forbidden`: Unauthorized role.
-  - `404 Not Found`: No pick orders are ready for picking.
-
-**Example Request:**
+- **Parameters (query string):**
+  - `employee_id`, `role` (필수, role=picker만 허용)
+- **예시:**
 ```
-GET /next-pick-order
-Authorization: <api_key_with_picker_role>
-```
-
-**Example Response (Success):**
-```json
-{
-    "pick_order_id": "PO0006",
-    "pick_slip_id": "PS0005",
-    "picking_zone": "RACK_A",
-    "pick_task": "[{'bin_id': 'BIN1', 'product_id': 'PROD13', 'quantity': 2}, {'bin_id': 'BIN2', 'product_Id': 'PROD14', 'quantity': 3}]",
-    "picker_id": "PICK9999",
-    "order_created_date": "2025-06-20",
-    "pick_order_status": "READY-FOR-PICKING",
-    "picked_date": ""
-}
-```
-
-**Example Response (Not Found):**
-```json
-{
-    "message": "No pick orders are currently ready for picking."
-}
+GET /next-pick-order?employee_id=picker001&role=picker
 ```
 
 ---
@@ -365,37 +204,11 @@ Authorization: <api_key_with_picker_role>
 
 - **Path:** `/pick-orders/{pick_order_id}/close`
 - **Method:** `POST`
-- **Authorization:** `Authorization` header with api_key required (`role` must be `picker`)
-- **Behavior:**
-  - Authenticates and authorizes the user, checking if the `role` is `picker` and if the picker is assigned to the specified `pick_order_id`.
-  - Validates that the pick order's status is `READY-FOR-PICKING`.
-  - Updates the pick order's status to `CLOSE` and records the `picked_date` as the current timestamp.
-  - After closing, it checks all other pick orders associated with the same `pick_slip_id`.
-  - If all related pick orders are `CLOSE`, it updates the corresponding `PickSlips` table record's status to `READY-FOR-PACKING` and records the `packing_start_date`.
-- **Response:**
-  - `200 OK`: Confirmation message. If the pick slip was updated, it will be noted in the response.
-  - `400 Bad Request`: Invalid status or missing parameters.
-  - `403 Forbidden`: Unauthorized role or not assigned to the order.
-  - `404 Not Found`: Pick order not found.
-
-**Example Request:**
-```
-POST /pick-orders/PO0006/close
-Authorization: <api_key_for_PICK9999>
-```
-
-**Example Response (Success, Pick Slip Not Updated):**
+- **Body:**
 ```json
 {
-    "message": "Pick order closed successfully."
-}
-```
-
-**Example Response (Success, Pick Slip Updated):**
-```json
-{
-    "message": "Pick order closed successfully.",
-    "pick_slip_status": "READY-FOR-PACKING"
+  "employee_id": "string",
+  "role": "picker"
 }
 ```
 
@@ -405,45 +218,12 @@ Authorization: <api_key_for_PICK9999>
 
 - **Path:** `/packing/start`
 - **Method:** `POST`
-- **Authorization:** `Authorization` header with api_key required (`role` must be `packer`)
 - **Body:**
-  ```json
-  {
-    "packing_zone": "string"
-  }
-  ```
-- **Behavior:**
-  - Authenticates and authorizes the user, checking if the `role` is `packer`.
-  - Scans for pick slips that are in the specified `packing_zone` and have a `pick_slip_status` of `READY-FOR-PACKING`.
-  - If multiple slips are found, it selects the one with the earliest `pick_slip_created_date`.
-  - It updates the selected pick slip's status to `PACKING-IN-PROGRESS`, sets the `packing_start_date` to the current time, and assigns the `packer_id`.
-  - Returns the full, updated pick slip record.
-- **Response:**
-  - `200 OK`: The updated pick slip object (JSON).
-  - `400 Bad Request`: Missing `packing_zone` in the request body.
-  - `403 Forbidden`: Unauthorized role.
-  - `404 Not Found`: No pick slips are ready for packing in the specified zone.
-
-**Example Request:**
-```
-POST /packing/start
-Authorization: <api_key_with_packer_role>
-Content-Type: application/json
-
-{
-    "packing_zone": "ZONE-A"
-}
-```
-
-**Example Response (Success):**
 ```json
 {
-    "pick_slip_id": "PS0005",
-    "packing_zone": "ZONE-A",
-    "pick_slip_status": "PACKING-IN-PROGRESS",
-    "packer_id": "packer-007",
-    "pick_slip_created_date": "2025-06-20",
-    "packing_start_date": "2025-06-21T10:00:00.123456"
+  "packing_zone": "string",
+  "employee_id": "string",
+  "role": "packer"
 }
 ```
 
@@ -453,25 +233,11 @@ Content-Type: application/json
 
 - **Path:** `/packing/{pick_slip_id}/close`
 - **Method:** `POST`
-- **Authorization:** `Authorization` header with api_key required (`role` must be `packer`)
-- **Behavior:**
-  - Authenticates and authorizes the user, checking if the `role` is `packer`.
-  - Updates the specified `pick_slip_id`'s status to `READY-FOR-DISPATCH` and records the current timestamp in the `packed_date` field.
-- **Response:**
-  - `200 OK`: Confirmation message.
-  - `403 Forbidden`: Unauthorized role.
-  - `404 Not Found`: The specified `pick_slip_id` does not exist.
-
-**Example Request:**
-```
-POST /packing/PS0005/close
-Authorization: <api_key_with_packer_role>
-```
-
-**Example Response (Success):**
+- **Body:**
 ```json
 {
-    "message": "Pick slip PS0005 has been closed and is ready for dispatch."
+  "employee_id": "string",
+  "role": "packer"
 }
 ```
 
@@ -481,25 +247,11 @@ Authorization: <api_key_with_packer_role>
 
 - **Path:** `/pick-slips/{pick_slip_id}/dispatch`
 - **Method:** `POST`
-- **Authorization:** `Authorization` header with api_key required (`role` must be `dispatcher`)
-- **Behavior:**
-  - Authenticates and authorizes the user, checking if the `role` is `dispatcher`.
-  - Updates the specified `pick_slip_id`'s status to `DISPATCHED` and records the current timestamp in the `dispatched_date` field.
-- **Response:**
-  - `200 OK`: Confirmation message.
-  - `403 Forbidden`: Unauthorized role.
-  - `404 Not Found`: The specified `pick_slip_id` does not exist.
-
-**Example Request:**
-```
-POST /pick-slips/PS0005/dispatch
-Authorization: <api_key_with_dispatcher_role>
-```
-
-**Example Response (Success):**
+- **Body:**
 ```json
 {
-    "message": "Pick slip PS0005 has been dispatched successfully."
+  "employee_id": "string",
+  "role": "dispatcher"
 }
 ```
 
@@ -509,25 +261,11 @@ Authorization: <api_key_with_dispatcher_role>
 
 - **Path:** `/packages/{package_id}/close-binning`
 - **Method:** `POST`
-- **Authorization:** `Authorization` header with api_key required (`role` must be `binner`)
-- **Behavior:**
-  - Authenticates and authorizes the user, checking if the `role` is `binner`.
-  - Updates the specified `package_id`'s status to `BINNED` and records the current timestamp in the `binned_date` field.
-- **Response:**
-  - `200 OK`: Confirmation message.
-  - `403 Forbidden`: Unauthorized role.
-  - `404 Not Found`: The specified `package_id` does not exist.
-
-**Example Request:**
-```
-POST /packages/PACK001/close-binning
-Authorization: <api_key_with_binner_role>
-```
-
-**Example Response (Success):**
+- **Body:**
 ```json
 {
-    "message": "Package PACK001 has been binned successfully."
+  "employee_id": "string",
+  "role": "binner"
 }
 ```
 
@@ -535,5 +273,5 @@ Authorization: <api_key_with_binner_role>
 
 ## Error Handling
 
-All endpoints return errors in the following format:
+모든 엔드포인트는 다음과 같은 형식으로 에러를 반환합니다:
 ```

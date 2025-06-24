@@ -9,18 +9,22 @@ pick_slips_table = dynamodb.Table(pick_slips_table_name)
 
 def lambda_handler(event, context):
     try:
-        authorizer_context = event.get('requestContext', {}).get('authorizer', {})
-        role = authorizer_context.get('role')
-
+        if event.get('httpMethod', 'POST') == 'GET':
+            params = event.get('queryStringParameters') or {}
+            role = params.get('role')
+            employee_id = params.get('employee_id')
+            path_params = event.get('pathParameters', {})
+        else:
+            body = json.loads(event.get('body', '{}'))
+            role = body.get('role')
+            employee_id = body.get('employee_id')
+            path_params = event.get('pathParameters', {})
         if role != 'dispatcher':
             return {
                 'statusCode': 403,
                 'body': json.dumps({'message': f"Forbidden: Role '{role}' is not authorized."})
             }
-
-        path_params = event.get('pathParameters', {})
         pick_slip_id = path_params.get('pick_slip_id')
-
         if not pick_slip_id:
             return {
                 'statusCode': 400,

@@ -3,18 +3,17 @@ from boto3.dynamodb.conditions import Key
 from common.utils import storing_table, packages_table, respond
 
 def lambda_handler(event, context):
-    auth = event['requestContext']['authorizer']
-    if auth['role'] != 'receiver':
+    body = json.loads(event.get('body', '{}'))
+    role = body.get('role')
+    employee_id = body.get('employee_id')
+    if role != 'receiver':
         return respond(403, {'message':'Forbidden'})
-
     try:
-        b = json.loads(event['body'])
-        sid = b['storing_order_id']
-        inv = b['invoice_number']
-        bill= b['bill_of_entry_id']
-        awb = b['airway_bill_number']
-        qty = b['quantity']
-        employee_id = b['employee_id']
+        sid = body['storing_order_id']
+        inv = body['invoice_number']
+        bill= body['bill_of_entry_id']
+        awb = body['airway_bill_number']
+        qty = body['quantity']
     except Exception:
         return respond(400, {'message':'Invalid input'})
 

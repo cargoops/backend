@@ -17,10 +17,9 @@ GSI_NAME = 'PickerStatusDateIndex'
 
 def lambda_handler(event, context):
     try:
-        authorizer_context = event.get('requestContext', {}).get('authorizer', {})
-        employee_id = authorizer_context.get('employee_id')
-        role = authorizer_context.get('role')
-
+        params = event.get('queryStringParameters') or {}
+        employee_id = params.get('employee_id')
+        role = params.get('role')
         if not employee_id or not role:
             return {
                 'statusCode': 401,
@@ -29,9 +28,8 @@ def lambda_handler(event, context):
                     'Access-Control-Allow-Headers': 'Content-Type',
                     'Access-Control-Allow-Methods': 'OPTIONS,GET'
                 },
-                'body': json.dumps({'message': 'Unauthorized: Missing employee_id or role from authorizer.'})
+                'body': json.dumps({'message': 'Unauthorized: Missing employee_id or role.'})
             }
-
         if role != 'picker':
             return {
                 'statusCode': 403,

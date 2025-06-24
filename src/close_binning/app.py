@@ -10,23 +10,23 @@ packages_table = dynamodb.Table(packages_table_name)
 def lambda_handler(event, context):
     print(f"Lambda function started - Event: {json.dumps(event)}")
     try:
-        authorizer_context = event.get('requestContext', {}).get('authorizer', {})
-        role = authorizer_context.get('role')
-        print(f"User role: {role}")
-
+        if event.get('httpMethod', 'POST') == 'GET':
+            params = event.get('queryStringParameters') or {}
+            role = params.get('role')
+            employee_id = params.get('employee_id')
+            path_params = event.get('pathParameters', {})
+        else:
+            body = json.loads(event.get('body', '{}'))
+            role = body.get('role')
+            employee_id = body.get('employee_id')
+            path_params = event.get('pathParameters', {})
         if role != 'binner':
-            print(f"Authorization failed - Role '{role}' is not authorized for this operation")
             return {
                 'statusCode': 403,
                 'body': json.dumps({'message': f"Forbidden: Role '{role}' is not authorized."})
             }
-
-        path_params = event.get('pathParameters', {})
         package_id = path_params.get('package_id')
-        print(f"Processing package_id: {package_id}")
-
         if not package_id:
-            print("Bad Request: package_id is missing")
             return {
                 'statusCode': 400,
                 'body': json.dumps({'message': 'Bad Request: package_id is required.'})

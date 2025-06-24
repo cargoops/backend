@@ -3,9 +3,10 @@ from common.utils import packages_table, respond
 from boto3.dynamodb.conditions import Attr
 
 def lambda_handler(event, context):
-    # Authentication and Authorization Check
-    auth = event['requestContext'].get('authorizer', {})
-    if auth.get('role') != 'tq_employee':
+    body = json.loads(event.get('body', '{}'))
+    role = body.get('role')
+    employee_id = body.get('employee_id')
+    if role != 'tq_employee':
         return respond(403, {'message': 'Unauthorized. (role != tq_employee)'})
 
     # Change all records with status TQ-CHECKING to TQ-FAILED
@@ -32,7 +33,6 @@ def lambda_handler(event, context):
     try:
         body = json.loads(event['body'])
         package_id = body['package_id']
-        employee_id = body['employee_id']
         flag = body['flag']
     except Exception:
         return respond(400, {'message': 'Invalid input values.'})

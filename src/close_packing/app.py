@@ -17,26 +17,23 @@ pick_slips_table = dynamodb.Table(pick_slips_table_name)
 def lambda_handler(event, context):
     try:
         print(f"Lambda function started - Request ID: {context.aws_request_id}")
-        
-        authorizer_context = event.get('requestContext', {}).get('authorizer', {})
-        role = authorizer_context.get('role')
-        
-        print(f"Authentication details - Role: {role}")
-
+        if event.get('httpMethod', 'POST') == 'GET':
+            params = event.get('queryStringParameters') or {}
+            role = params.get('role')
+            employee_id = params.get('employee_id')
+            path_params = event.get('pathParameters', {})
+        else:
+            body = json.loads(event.get('body', '{}'))
+            role = body.get('role')
+            employee_id = body.get('employee_id')
+            path_params = event.get('pathParameters', {})
         if role != 'packer':
-            print(f"Forbidden: Role '{role}' is not authorized")
             return {
                 'statusCode': 403,
                 'body': json.dumps({'message': f"Forbidden: Role '{role}' is not authorized."})
             }
-
-        path_params = event.get('pathParameters', {})
         pick_slip_id = path_params.get('pick_slip_id')
-        
-        print(f"Path parameters - Pick slip ID: {pick_slip_id}")
-
         if not pick_slip_id:
-            print("Bad Request: pick_slip_id is required")
             return {
                 'statusCode': 400,
                 'body': json.dumps({'message': 'Bad Request: pick_slip_id is required.'})

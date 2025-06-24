@@ -19,32 +19,24 @@ pick_slips_table = dynamodb.Table(pick_slips_table_name)
 def lambda_handler(event, context):
     try:
         print(f"Lambda function started - Request ID: {context.aws_request_id}")
-        
-        authorizer_context = event.get('requestContext', {}).get('authorizer', {})
-        employee_id = authorizer_context.get('employee_id')
-        role = authorizer_context.get('role')
-        
+        body = json.loads(event.get('body', '{}'))
+        employee_id = body.get('employee_id')
+        role = body.get('role')
         print(f"Authentication details - Employee ID: {employee_id}, Role: {role}")
-
         if not employee_id or not role:
             print("Unauthorized: Missing authentication details")
             return {
                 'statusCode': 401,
                 'body': json.dumps({'message': 'Unauthorized: Missing authentication details.'})
             }
-
         if role != 'packer':
             print(f"Forbidden: Role '{role}' is not authorized")
             return {
                 'statusCode': 403,
                 'body': json.dumps({'message': f"Forbidden: Role '{role}' is not authorized."})
             }
-        
-        body = json.loads(event.get('body', '{}'))
         packing_zone = body.get('packing_zone')
-        
         print(f"Request body - Packing zone: {packing_zone}")
-
         if not packing_zone:
             print("Bad Request: packing_zone is required")
             return {

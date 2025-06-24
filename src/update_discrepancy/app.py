@@ -2,14 +2,14 @@ import json
 from common.utils import storing_table, respond
 
 def lambda_handler(event, context):
-    auth = event['requestContext']['authorizer']
-    if auth['role'] != 'receiver':
+    body = json.loads(event.get('body', '{}'))
+    role = body.get('role')
+    employee_id = body.get('employee_id')
+    if role != 'receiver':
         return respond(403, {'message':'Forbidden'})
-
     try:
-        b = json.loads(event['body'])
-        sid = b['storing_order_id']
-        detail = b['discrepancy_detail']
+        sid = body['storing_order_id']
+        detail = body['discrepancy_detail']
     except Exception:
         return respond(400, {'message':'Invalid input'})
 

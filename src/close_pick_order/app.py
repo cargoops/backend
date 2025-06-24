@@ -19,19 +19,22 @@ GSI_NAME = 'PickSlipIdIndex'
 
 def lambda_handler(event, context):
     try:
-        authorizer_context = event.get('requestContext', {}).get('authorizer', {})
-        employee_id = authorizer_context.get('employee_id')
-        role = authorizer_context.get('role')
-        
-        path_params = event.get('pathParameters', {})
+        if event.get('httpMethod', 'POST') == 'GET':
+            params = event.get('queryStringParameters') or {}
+            role = params.get('role')
+            employee_id = params.get('employee_id')
+            path_params = event.get('pathParameters', {})
+        else:
+            body = json.loads(event.get('body', '{}'))
+            role = body.get('role')
+            employee_id = body.get('employee_id')
+            path_params = event.get('pathParameters', {})
         pick_order_id = path_params.get('pick_order_id')
-
         if not all([employee_id, role, pick_order_id]):
             return {
                 'statusCode': 400,
                 'body': json.dumps({'message': 'Bad Request: Missing required parameters.'})
             }
-
         if role != 'picker':
             return {
                 'statusCode': 403,

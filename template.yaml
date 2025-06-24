@@ -190,32 +190,6 @@ Resources:
           Projection:
             ProjectionType: ALL
 
-  # ─────── Lambda Authorizer ───────
-
-  AuthorizerInvokePermission:
-    Type: AWS::Lambda::Permission
-    Properties:
-      FunctionName: !GetAtt AuthorizerFunction.Arn
-      Action: lambda:InvokeFunction
-      Principal: apigateway.amazonaws.com
-      # 모든 스테이지·메서드에서 호출 가능하게 허용
-      # SourceArn: !Sub
-      #   arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${Api}/*/*/*
-
-  AuthorizerFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      Description: "API key authorizer for all endpoints v2"
-      Handler: authorizer.app.lambda_handler
-      CodeUri: src
-      Policies:
-        - Version: '2012-10-17'
-          Statement:
-            - Effect: Allow
-              Action:
-                - dynamodb:GetItem
-              Resource: !GetAtt ApiKeysTable.Arn
-
   # ─────── API Gateway ───────
 
   Api:
@@ -223,15 +197,6 @@ Resources:
     Properties:
       Name: StoringOrdersAPI
       StageName: Prod
-      Auth:
-        DefaultAuthorizer: LambdaTokenAuthorizer
-        Authorizers:
-          LambdaTokenAuthorizer:
-            FunctionArn: !GetAtt AuthorizerFunction.Arn
-            Identity:
-              Headers:
-                - Authorization
-            AuthorizerResultTtlInSeconds: 1
       Cors:
         AllowOrigin: "'*'"
         AllowHeaders: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
@@ -349,11 +314,6 @@ Resources:
             Path: /api-key
             Method: get
             RestApiId: !Ref Api
-            Auth:
-              Authorizer: NONE
-      Policies:
-        - DynamoDBReadPolicy:
-            TableName: !Ref ApiKeysTable
 
   TqQualityCheckFunction:
     Type: AWS::Serverless::Function
@@ -486,8 +446,6 @@ Resources:
             Path: /storing-orders
             Method: options
             RestApiId: !Ref Api
-            Auth:
-              Authorizer: NONE
   
   PackagesOptionsFunction:
     Type: AWS::Serverless::Function
@@ -502,8 +460,6 @@ Resources:
             Path: /packages
             Method: options
             RestApiId: !Ref Api
-            Auth:
-              Authorizer: NONE
 
   PackageOptionsFunction:
     Type: AWS::Serverless::Function
@@ -518,8 +474,6 @@ Resources:
             Path: /package/{package_id}
             Method: options
             RestApiId: !Ref Api
-            Auth:
-              Authorizer: NONE
   
   BinAllocationOptionsFunction:
     Type: AWS::Serverless::Function
@@ -534,8 +488,6 @@ Resources:
             Path: /bin-allocation
             Method: options
             RestApiId: !Ref Api
-            Auth:
-              Authorizer: NONE
 
   TqQualityCheckOptionsFunction:
     Type: AWS::Serverless::Function
@@ -550,8 +502,6 @@ Resources:
             Path: /tq-quality-check
             Method: options
             RestApiId: !Ref Api
-            Auth:
-              Authorizer: NONE
   
   UpdateDiscrepancyOptionsFunction:
     Type: AWS::Serverless::Function
@@ -566,8 +516,6 @@ Resources:
             Path: /storing-orders/discrepancy
             Method: options
             RestApiId: !Ref Api
-            Auth:
-              Authorizer: NONE
 
   ReceiveOrderOptionsFunction:
     Type: AWS::Serverless::Function
@@ -582,8 +530,6 @@ Resources:
             Path: /storing-orders/receive
             Method: options
             RestApiId: !Ref Api
-            Auth:
-              Authorizer: NONE
 
   ReadPickSlipsFunction:
     Type: AWS::Serverless::Function
@@ -649,8 +595,6 @@ Resources:
             Path: /pick-slips
             Method: options
             RestApiId: !Ref Api
-            Auth:
-              Authorizer: NONE
 
   PickOrdersOptionsFunction:
     Type: AWS::Serverless::Function
@@ -665,8 +609,6 @@ Resources:
             Path: /pick-orders
             Method: options
             RestApiId: !Ref Api
-            Auth:
-              Authorizer: NONE
 
   GetNextPickOrderOptionsFunction:
     Type: AWS::Serverless::Function
@@ -681,8 +623,6 @@ Resources:
             Path: /next-pick-order
             Method: options
             RestApiId: !Ref Api
-            Auth:
-              Authorizer: NONE
 
   ClosePickOrderFunction:
     Type: AWS::Serverless::Function
@@ -716,8 +656,6 @@ Resources:
             Path: /pick-orders/{pick_order_id}/close
             Method: options
             RestApiId: !Ref Api
-            Auth:
-              Authorizer: NONE
 
   StartPackingFunction:
     Type: AWS::Serverless::Function
@@ -749,8 +687,6 @@ Resources:
             Path: /packing/start
             Method: options
             RestApiId: !Ref Api
-            Auth:
-              Authorizer: NONE
 
   ClosePackingFunction:
     Type: AWS::Serverless::Function
@@ -782,8 +718,6 @@ Resources:
             Path: /packing/{pick_slip_id}/close
             Method: options
             RestApiId: !Ref Api
-            Auth:
-              Authorizer: NONE
 
   DispatchPickSlipFunction:
     Type: AWS::Serverless::Function
@@ -815,8 +749,6 @@ Resources:
             Path: /pick-slips/{pick_slip_id}/dispatch
             Method: options
             RestApiId: !Ref Api
-            Auth:
-              Authorizer: NONE
 
   CloseBinningFunction:
     Type: AWS::Serverless::Function
@@ -848,8 +780,6 @@ Resources:
             Path: /packages/{package_id}/close-binning
             Method: options
             RestApiId: !Ref Api
-            Auth:
-              Authorizer: NONE
 
   ReadInventoryFunction:
     Type: AWS::Serverless::Function
@@ -881,8 +811,6 @@ Resources:
             Path: /inventory
             Method: options
             RestApiId: !Ref Api
-            Auth:
-              Authorizer: NONE
 
 Outputs:
   ApiUrl:

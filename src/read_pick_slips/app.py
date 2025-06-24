@@ -19,11 +19,9 @@ table = dynamodb.Table(table_name)
 
 def lambda_handler(event, context):
     print(json.dumps(event))
-    # Extract role from the authorizer context
-    authorizer_context = event.get('requestContext', {}).get('authorizer', {})
-    role = authorizer_context.get('role')
-
-    # Check if the user role is admin
+    params = event.get('queryStringParameters') or {}
+    role = params.get('role')
+    employee_id = params.get('employee_id')
     if role != 'admin':
         return {
             'statusCode': 403,
@@ -34,16 +32,12 @@ def lambda_handler(event, context):
             },
             'body': json.dumps({'message': 'Forbidden: You do not have permission to access this resource.'})
         }
-
     try:
         response = table.scan()
         items = response.get('Items', [])
-        
-        # Handle pagination if the table is large
         while 'LastEvaluatedKey' in response:
             response = table.scan(ExclusiveStartKey=response['LastEvaluatedKey'])
             items.extend(response.get('Items', []))
-
         return {
             'statusCode': 200,
             'headers': {
