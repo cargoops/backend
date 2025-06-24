@@ -32,9 +32,9 @@ def lambda_handler(event, context):
 
         timestamp = datetime.now().isoformat()
         if flag == 'fail':
-            update_expr = "SET #s = :status, tq_fail_description = :desc, tq_close_date = :date"
+            update_expr = "SET #s = :status, tq_fail_description = :desc, tq_close_date = :close_date, tq_date = :tq_date"
             expr_attr_names = {'#s': 'status'}
-            expr_attr_values = {':status': 'TQ-QUALITY-CHECK-FAILED', ':desc': description, ':date': timestamp}
+            expr_attr_values = {':status': 'TQ-QUALITY-CHECK-FAILED', ':desc': description, ':close_date': timestamp, ':tq_date': timestamp}
             packages_table.update_item(
                 Key={'package_id': package_id},
                 UpdateExpression=update_expr,
@@ -45,9 +45,9 @@ def lambda_handler(event, context):
         else:
             packages_table.update_item(
                 Key={'package_id': package_id},
-                UpdateExpression="SET #s = :status, ready_for_bin_allocation_date = :date",
+                UpdateExpression="SET #s = :status, ready_for_bin_allocation_date = :date, tq_date = :tq_date",
                 ExpressionAttributeNames={'#s': 'status'},
-                ExpressionAttributeValues={':status': 'READY-FOR-BIN-ALLOCATION', ':date': timestamp}
+                ExpressionAttributeValues={':status': 'READY-FOR-BIN-ALLOCATION', ':date': timestamp, ':tq_date': timestamp}
             )
             return respond(200, {'message': f'Package {package_id} is now READY-FOR-BIN-ALLOCATION.'})
 
