@@ -205,7 +205,7 @@ Resources:
   AuthorizerFunction:
     Type: AWS::Serverless::Function
     Properties:
-      Description: "API key authorizer for all endpoints"
+      Description: "API key authorizer for all endpoints v2"
       Handler: authorizer.app.lambda_handler
       CodeUri: src
       Policies:
