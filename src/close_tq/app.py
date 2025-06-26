@@ -1,6 +1,6 @@
 import json
 from datetime import datetime
-from common.utils import packages_table, respond
+from common.utils import packages_table, respond, inventory_table
 
 def lambda_handler(event, context):
     try:
@@ -43,13 +43,44 @@ def lambda_handler(event, context):
             )
             return respond(200, {'message': f'Package {package_id} is now TQ-QUALITY-CHECK-FAILED.'})
         else:
+            # 패키지 상태 업데이트
             packages_table.update_item(
                 Key={'package_id': package_id},
                 UpdateExpression="SET #s = :status, ready_for_bin_allocation_date = :date, tq_date = :tq_date",
                 ExpressionAttributeNames={'#s': 'status'},
                 ExpressionAttributeValues={':status': 'READY-FOR-BIN-ALLOCATION', ':date': timestamp, ':tq_date': timestamp}
             )
-            return respond(200, {'message': f'Package {package_id} is now READY-FOR-BIN-ALLOCATION.'})
+
+            # 인벤토리 업데이트 로직 추가
+            bin_allocation = package.get('bin_allocation')
+            product_id = package.get('product_id')
+            if bin_allocation and product_id:
+                if isinstance(bin_allocation, str):
+                    try:
+                        bin_allocation = json.loads(bin_allocation)
+                    except Exception:
+                        bin_allocation = {}
+                for bin_id, qty in bin_allocation.items():
+                    if not isinstance(qty, int):
+                        try:
+                            qty = int(qty)
+                        except Exception:
+                            continue
+                    key = {'bin_id': bin_id, 'product_id': product_id}
+                    # 기존 엔트리 조회
+                    resp = inventory_table.get_item(Key=key)
+                    item = resp.get('Item')
+                    if item:
+                        new_qty = int(item.get('quantity', 0)) + qty
+                        inventory_table.update_item(
+                            Key=key,
+                            UpdateExpression="SET quantity = :q",
+                            ExpressionAttributeValues={':q': new_qty}
+                        )
+                    else:
+                        inventory_table.put_item(Item={**key, 'quantity': qty})
+
+            return respond(200, {'message': f'Package {package_id} is now READY-FOR-BIN-ALLOCATION and inventory updated.'})
 
     except Exception as e:
         print(f"Error: {e}")
