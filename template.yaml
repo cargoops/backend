@@ -805,6 +805,8 @@ Resources:
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref PackagesTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref InventoryTable
 
   CloseBinningOptionsFunction:
     Type: AWS::Serverless::Function

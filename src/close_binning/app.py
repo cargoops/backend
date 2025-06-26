@@ -43,7 +43,53 @@ def lambda_handler(event, context):
             }
 
         print(f"Package {package_id} found, updating status to BINNED")
-        # Update the package status to BINNED
+        # bin_allocation, product_id 읽기
+        package_item = item_response['Item']
+        bin_allocation_str = package_item.get('bin_allocation')
+        product_id = package_item.get('product_id')
+        if not bin_allocation_str or not product_id:
+            return {
+                'statusCode': 400,
+                'body': json.dumps({'message': 'Bad Request: bin_allocation or product_id missing in package.'})
+            }
+        try:
+            bin_allocation = json.loads(bin_allocation_str.replace("'", '"')) if isinstance(bin_allocation_str, str) else bin_allocation_str
+        except Exception as e:
+            print(f"bin_allocation 파싱 오류: {e}")
+            return {
+                'statusCode': 400,
+                'body': json.dumps({'message': 'Bad Request: bin_allocation parsing error.'})
+            }
+        # inventory 테이블 업데이트
+        inventory_table_name = os.environ.get('INVENTORY_TABLE')
+        inventory_table = dynamodb.Table(inventory_table_name)
+        for bin_id, qty in bin_allocation.items():
+            if not isinstance(qty, int):
+                try:
+                    qty = int(qty)
+                except:
+                    continue
+            # 기존 레코드 조회
+            inv_resp = inventory_table.get_item(Key={'bin_id': bin_id, 'product_id': product_id}, ConsistentRead=True)
+            if 'Item' in inv_resp:
+                # 기존 quantity에 더하기
+                prev_qty = inv_resp['Item'].get('quantity', 0)
+                new_qty = prev_qty + qty
+                inventory_table.update_item(
+                    Key={'bin_id': bin_id, 'product_id': product_id},
+                    UpdateExpression="SET quantity = :q",
+                    ExpressionAttributeValues={':q': new_qty}
+                )
+                print(f"Updated inventory: bin_id={bin_id}, product_id={product_id}, quantity={prev_qty} -> {new_qty}")
+            else:
+                # 새로 생성
+                inventory_table.put_item(Item={
+                    'bin_id': bin_id,
+                    'product_id': product_id,
+                    'quantity': qty
+                })
+                print(f"Created inventory: bin_id={bin_id}, product_id={product_id}, quantity={qty}")
+        # 패키지 상태 업데이트
         timestamp = datetime.now().isoformat()
         packages_table.update_item(
             Key={'package_id': package_id},
