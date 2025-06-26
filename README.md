@@ -1,22 +1,9 @@
 # Backend API Documentation
 
----
-
-## CI/CD 배포 예시 (SAM)
-
-```bash
-# 빌드
-sam build
-# 배포 (스택명: cargoops-backend)
-sam deploy --stack-name cargoops-backend --resolve-s3 --capabilities CAPABILITY_IAM --region us-east-2
-```
-
----
 
 ## Overview
 
-이 백엔드는 storing orders, package inspections, bin allocation 등을 관리하는 API를 제공합니다. 
-AWS Lambda, DynamoDB를 사용하며, **이제 별도의 인증 없이 모든 요청에서 employee_id와 role을 직접 전달해야 합니다.**
+This backend provides APIs for managing storing orders, package inspections, bin allocation, and other warehouse operations.
 
 ---
 
@@ -28,22 +15,9 @@ https://ozw3p7h26e.execute-api.us-east-2.amazonaws.com/Prod
 
 ---
 
-## 인증 및 권한 안내 (2024-06 기준)
-
-- **더 이상 API Key, Authorizer, Authorization 헤더를 사용하지 않습니다.**
-- 모든 요청에서 `employee_id`와 `role`을 직접 전달해야 하며, 서버는 이 값만으로 권한을 판단합니다.
-- **POST/PUT 등 body가 있는 요청:**
-  - body(JSON)에 반드시 `employee_id`와 `role`을 포함해야 합니다.
-- **GET 등 body가 없는 요청:**
-  - query string에 반드시 `employee_id`와 `role`을 포함해야 합니다.
-  - 예시: `/inventory?employee_id=admin001&role=admin`
-- 권한이 필요한 엔드포인트는 role 값으로만 판단합니다.
-
----
-
 ## API Endpoints
 
-### 1. Get API Key Record (테스트용, 인증 없음)
+### 1. Get API Key Record
 
 - **Path:** `/api-key`
 - **Method:** `POST` or `GET`
@@ -309,11 +283,4 @@ curl -X POST "https://ozw3p7h26e.execute-api.us-east-2.amazonaws.com/Prod/packag
     "employee_id": "tq001",
     "role": "tq_employee"
   }'
-```
-
----
-
-## Error Handling
-
-모든 엔드포인트는 다음과 같은 형식으로 에러를 반환합니다:
 ```
