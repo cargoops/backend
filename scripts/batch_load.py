@@ -9,11 +9,12 @@ import ast
 DATA_DIR = os.path.join(os.path.dirname(__file__), '..', 'data')
 REGION = 'us-east-2'
 
-def cast_value(val):
+def cast_value(key, val):
     """Convert to int/Decimal, list/dict, else leave as str (empty as None)."""
     if val == '':
         return None
-
+    if key and key.endswith('_id'):
+        return str(val)
     # 문자열일 때만 파싱 시도
     if isinstance(val, str):
         # Try to evaluate as a Python literal (for lists/dicts)
@@ -43,14 +44,33 @@ def batch_load(table_name, csv_path):
     dynamodb = boto3.resource('dynamodb', region_name=REGION)
     table = dynamodb.Table(table_name)
 
+    # 테이블별 primary key 지정 (필요시 확장)
+    primary_keys = {
+        'PickSlips': 'pick_slip_id',
+        'PickOrders': 'pick_order_id',
+        # 다른 테이블도 필요시 추가
+    }
+    pk = primary_keys.get(table_name)
+    seen_keys = set()
+
     with open(csv_path, newline='', encoding='utf-8-sig') as f:
         reader = csv.DictReader(f)
         with table.batch_writer() as batch:
             for row in reader:
-                item = {k: cast_value(v) for k, v in row.items() if k is not None and cast_value(v) is not None}
+                # PickOrders의 picker_id가 비어있으면 'PICK9999' 할당
+                if table_name == 'PickOrders' and ('picker_id' not in row or row['picker_id'] == ''):
+                    row['picker_id'] = 'PICK9999'
+                item = {k: cast_value(k, v) for k, v in row.items() if k is not None and cast_value(k, v) is not None}
+                # primary key가 없으면 skip
+                if pk and (pk not in item or not item[pk]):
+                    continue
+                # 중복된 primary key는 skip
+                if pk and item[pk] in seen_keys:
+                    continue
+                if pk:
+                    seen_keys.add(item[pk])
                 if item:
                     batch.put_item(Item=item)
-
     print(f"✔ Done: {table_name}")
 
 if __name__ == '__main__':
