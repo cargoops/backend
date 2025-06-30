@@ -15,6 +15,15 @@ def cast_value(key, val):
         return None
     if key and key.endswith('_id'):
         return str(val)
+    # _date로 끝나는 필드는 .000000이 없으면 붙여줌
+    if key and key.endswith('_date') and isinstance(val, str):
+        # ISO8601 기본형: YYYY-MM-DDTHH:MM:SS 또는 YYYY-MM-DDTHH:MM:SS.000000
+        if len(val) == 19 and val.count('-') == 2 and val.count(':') == 2 and 'T' in val:
+            # 초단위까지만 있을 때
+            return val + '.000000'
+        # 이미 .000000이 붙어있으면 그대로 반환
+        if len(val) > 19 and val[19:26] == '.00000':
+            return val
     # 문자열일 때만 파싱 시도
     if isinstance(val, str):
         # Try to evaluate as a Python literal (for lists/dicts)
